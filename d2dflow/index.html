@@ -266,9 +266,60 @@
         ::-webkit-scrollbar-track { background:transparent; }
         ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
         ::-webkit-scrollbar-thumb:hover { background:var(--dim); }
+
+        /* ═══ LANDING PAGE ═══ */
+        .landing-overlay { position:fixed; inset:0; background:var(--bg); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:1; transition:opacity 0.4s ease; }
+        .landing-overlay.hidden { opacity:0; pointer-events:none; }
+        .landing-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:48px 40px; width:420px; max-width:90vw; box-shadow:0 16px 48px rgba(0,0,0,0.06); text-align:center; animation:landingIn 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        @keyframes landingIn { from{opacity:0;transform:translateY(24px) scale(0.96)} to{opacity:1;transform:none} }
+        .landing-logo { font-weight:800; font-size:2rem; color:var(--text); letter-spacing:-1px; margin-bottom:6px; }
+        .landing-logo span { color:var(--accent); }
+        .landing-subtitle { font-size:0.9rem; color:var(--dim); margin-bottom:32px; font-weight:400; line-height:1.5; }
+        .landing-tabs { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:4px; gap:4px; margin-bottom:24px; }
+        .landing-tab { flex:1; padding:10px; border:none; border-radius:7px; background:transparent; color:var(--dim); font-family:inherit; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .landing-tab.active { background:var(--surface); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+        .landing-form { display:flex; flex-direction:column; gap:12px; }
+        .landing-input { width:100%; padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; font-family:inherit; font-size:0.9rem; color:var(--text); outline:none; transition:border 0.15s; box-sizing:border-box; }
+        .landing-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+        .landing-input::placeholder { color:var(--dim); }
+        .landing-btn { width:100%; padding:14px; border:none; border-radius:10px; font-family:inherit; font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+        .landing-btn.primary { background:var(--accent); color:#fff; box-shadow:0 2px 8px rgba(85,120,39,0.25); }
+        .landing-btn.primary:hover { filter:brightness(1.08); transform:translateY(-1px); }
+        .landing-btn.primary:disabled { opacity:0.6; cursor:not-allowed; transform:none; filter:none; }
+        .landing-btn.secondary { background:transparent; border:1.5px solid var(--border); color:var(--text); margin-top:4px; }
+        .landing-btn.secondary:hover { border-color:var(--dim); background:var(--surface2); }
+        .landing-divider { display:flex; align-items:center; gap:12px; margin:8px 0; color:var(--dim); font-size:0.8rem; font-weight:500; }
+        .landing-divider::before, .landing-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+        .landing-error { font-size:0.8rem; color:var(--red); font-weight:500; min-height:20px; margin-top:2px; }
+
+        /* ═══ USER STATUS IN TOPBAR ═══ */
+        .user-badge { display:flex; align-items:center; gap:8px; padding:0 12px; height:36px; background:var(--accent-glow); border:1px solid rgba(85,120,39,0.25); border-radius:6px; font-size:0.8rem; font-weight:600; color:var(--accent); }
+        .user-badge .user-dot { width:7px; height:7px; border-radius:50%; background:var(--green); }
+        .logout-btn { padding:0 10px; height:36px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--dim); font-family:inherit; font-size:0.75rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
+        .logout-btn:hover { color:var(--red); border-color:var(--red); background:var(--red-glow); }
     </style>
 </head>
 <body>
+
+<!-- ═══ LANDING PAGE ═══ -->
+<div class="landing-overlay" id="landingOverlay">
+    <div class="landing-card">
+        <div class="landing-logo">D2D <span>FLOW</span></div>
+        <div class="landing-subtitle">Practice your sales conversations with interactive flowcharts</div>
+        <div class="landing-tabs">
+            <button class="landing-tab active" onclick="switchLandingTab('login')">Log In</button>
+            <button class="landing-tab" onclick="switchLandingTab('register')">Sign Up</button>
+        </div>
+        <div id="loginForm" class="landing-form">
+            <input class="landing-input" type="email" id="authEmail" placeholder="Email" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('authPassword').focus()">
+            <input class="landing-input" type="password" id="authPassword" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleAuth()">
+            <div class="landing-error" id="authError"></div>
+            <button class="landing-btn primary" id="authSubmitBtn" onclick="handleAuth()">Log In</button>
+        </div>
+        <div class="landing-divider">or</div>
+        <button class="landing-btn secondary" onclick="continueAsGuest()">Continue as Guest</button>
+    </div>
+</div>
 
 <div class="topbar">
     <div class="logo">D2D <span>FLOW</span></div>
@@ -278,6 +329,8 @@
         <button class="mode-btn" data-mode="hard" onclick="setMode('hard')">Hard</button>
     </div>
     <div class="top-actions">
+        <div class="user-badge" id="userBadge" style="display:none;"><div class="user-dot"></div><span id="userEmail"></span></div>
+        <button class="logout-btn" id="logoutBtn" style="display:none;" onclick="handleLogout()">Log Out</button>
         <button class="tbtn" id="routeToggleBtn" onclick="toggleRouteMode()">⚡ Random</button>
         <button class="tbtn" id="recordBtn" onclick="toggleRecording()">⏺ Record</button>
         <button class="tbtn" onclick="resetRun()">↺ Restart</button>
@@ -418,6 +471,8 @@ function save(){
         }
     });
     localStorage.setItem('d2d_v4',JSON.stringify(D));
+    // If logged in, also save to database
+    saveFlowToServer();
 }
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
 function E(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -1263,7 +1318,137 @@ function renderMap(){
     cv.innerHTML=h;
 }
 
-init();
+// ═══ AUTH & API ═══
+const API_BASE = window.location.origin + '/api';
+let authToken = null;
+let authUser = null;
+let landingTab = 'login';
+
+function switchLandingTab(tab) {
+    landingTab = tab;
+    document.querySelectorAll('.landing-tab').forEach(t => t.classList.toggle('active', t.textContent.trim() === (tab === 'login' ? 'Log In' : 'Sign Up')));
+    document.getElementById('authSubmitBtn').textContent = tab === 'login' ? 'Log In' : 'Create Account';
+    document.getElementById('authPassword').autocomplete = tab === 'login' ? 'current-password' : 'new-password';
+    document.getElementById('authError').textContent = '';
+}
+
+async function handleAuth() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const errEl = document.getElementById('authError');
+    const btn = document.getElementById('authSubmitBtn');
+    errEl.textContent = '';
+
+    if (!email || !password) { errEl.textContent = 'Please fill in all fields.'; return; }
+    if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+
+    btn.disabled = true;
+    btn.textContent = landingTab === 'login' ? 'Logging in...' : 'Creating account...';
+
+    try {
+        const endpoint = landingTab === 'login' ? '/auth/login' : '/auth/register';
+        const res = await fetch(API_BASE + endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error || 'Something went wrong.'; return; }
+
+        authToken = data.token;
+        authUser = data.email;
+        sessionStorage.setItem('d2d_token', authToken);
+        sessionStorage.setItem('d2d_user', authUser);
+
+        // Try to load saved flow from server
+        await loadFlowFromServer();
+        showApp();
+    } catch (e) {
+        errEl.textContent = 'Cannot connect to server. Try guest mode.';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = landingTab === 'login' ? 'Log In' : 'Create Account';
+    }
+}
+
+function continueAsGuest() {
+    authToken = null;
+    authUser = null;
+    showApp();
+}
+
+let appStarted = false;
+function showApp() {
+    const overlay = document.getElementById('landingOverlay');
+    overlay.classList.add('hidden');
+    setTimeout(() => overlay.style.display = 'none', 400);
+    updateUserUI();
+    if (!appStarted) { appStarted = true; init(); }
+}
+
+function updateUserUI() {
+    const badge = document.getElementById('userBadge');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const emailSpan = document.getElementById('userEmail');
+    if (authUser) {
+        badge.style.display = 'flex';
+        logoutBtn.style.display = 'block';
+        emailSpan.textContent = authUser;
+    } else {
+        badge.style.display = 'none';
+        logoutBtn.style.display = 'none';
+    }
+}
+
+function handleLogout() {
+    authToken = null;
+    authUser = null;
+    sessionStorage.removeItem('d2d_token');
+    sessionStorage.removeItem('d2d_user');
+    updateUserUI();
+    toast('Logged out');
+}
+
+async function loadFlowFromServer() {
+    if (!authToken) return;
+    try {
+        const res = await fetch(API_BASE + '/flow', {
+            headers: { 'Authorization': 'Bearer ' + authToken }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.flow_data) {
+                D = JSON.parse(data.flow_data);
+                localStorage.setItem('d2d_v4', JSON.stringify(D));
+            }
+        }
+    } catch (e) { /* Server unavailable, use localStorage */ }
+}
+
+async function saveFlowToServer() {
+    if (!authToken) return;
+    try {
+        await fetch(API_BASE + '/flow', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authToken
+            },
+            body: JSON.stringify({ flow_data: JSON.stringify(D) })
+        });
+    } catch (e) { /* Server unavailable, local save still works */ }
+}
+
+// Check for existing session on page load
+(function checkSession() {
+    const token = sessionStorage.getItem('d2d_token');
+    const user = sessionStorage.getItem('d2d_user');
+    if (token && user) {
+        authToken = token;
+        authUser = user;
+        loadFlowFromServer().then(() => showApp());
+    }
+})();
 </script>
 </body>
 </html>
