@@ -266,7 +266,37 @@
         ::-webkit-scrollbar-track { background:transparent; }
         ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
         ::-webkit-scrollbar-thumb:hover { background:var(--dim); }
+
+        /* ═══ AUTH & CLOUD MODALS ═══ */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:800; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; backdrop-filter:blur(3px); }
+        .modal-overlay.open { opacity:1; pointer-events:all; }
+        .modal-box { background:var(--bg2); border:1px solid var(--border); border-radius:14px; width:340px; max-width:90vw; box-shadow:0 16px 48px rgba(0,0,0,0.12); transform:scale(0.96); transition:transform 0.2s; overflow:hidden; }
+        .modal-overlay.open .modal-box { transform:scale(1); }
+        .cloud-modal-box { width:500px; }
+        .modal-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+        .modal-body { padding:20px; }
+        .modal-footer { padding:0 20px 20px; }
+        .modal-field { margin-bottom:14px; }
+        .modal-field label { display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--dim); margin-bottom:5px; }
+        .modal-field input { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-family:inherit; font-size:0.88rem; outline:none; transition:border 0.15s; }
+        .modal-field input:focus { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
+        .auth-tabs { display:flex; gap:4px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:4px; }
+        .auth-tab { padding:6px 16px; border:none; border-radius:6px; background:transparent; color:var(--dim); font-family:inherit; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
+        .auth-tab.active { background:var(--bg2); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+        .auth-error { font-size:0.82rem; min-height:20px; margin-bottom:10px; font-weight:500; }
+        .auth-note { text-align:center; font-size:0.72rem; color:var(--dim); padding:12px 20px; border-top:1px solid var(--surface2); }
+        .cloud-save-row { display:flex; gap:8px; align-items:center; margin-bottom:16px; }
+        .cloud-save-row input { flex:1; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:8px; font-family:inherit; font-size:0.85rem; outline:none; transition:border 0.15s; }
+        .cloud-save-row input:focus { border-color:var(--accent); }
+        .cloud-flows-list { max-height:280px; overflow-y:auto; }
+        .cloud-flow-item { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; margin-bottom:8px; }
+        .cloud-flow-info { display:flex; flex-direction:column; gap:2px; }
+        .cloud-flow-name { font-size:0.88rem; font-weight:600; color:var(--text); }
+        .cloud-flow-date { font-size:0.72rem; color:var(--dim); }
+        .cloud-flow-actions { display:flex; gap:6px; }
+        .cloud-section-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--dim); margin:0 0 8px; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -287,6 +317,7 @@
             <div class="dropdown-content">
                 <a onclick="exportData()">↓ Export (.json)</a>
                 <a onclick="document.getElementById('imp').click()">↑ Import (.json)</a>
+                <a onclick="openCloudModal()" style="border-top:1px solid var(--surface2);margin-top:4px;padding-top:12px;">☁ Cloud Flows</a>
             </div>
         </div>
         <button class="tbtn" onclick="openMap()" style="color:var(--text);">
@@ -302,6 +333,13 @@
                 <rect x="16" y="16" width="6" height="5" rx="1"></rect>
             </svg> Flowchart
         </button>
+        <div class="dropdown">
+            <button class="tbtn" id="authBtn">☁ Sign In</button>
+            <div class="dropdown-content" id="authDrop">
+                <a onclick="openAuthModal('signin')">Sign In</a>
+                <a onclick="openAuthModal('signup')">Sign Up</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -376,6 +414,53 @@
     </div>
 </div>
 
+<!-- Auth Modal -->
+<div class="modal-overlay" id="authOverlay" onclick="closeAuthModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="signinTab" onclick="switchAuthTab('signin')">Sign In</button>
+                <button class="auth-tab" id="signupTab" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+            <button class="ed-close" onclick="closeAuthModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-field">
+                <label>Email</label>
+                <input type="email" id="authEmail" placeholder="you@example.com" onkeydown="if(event.code==='Enter')submitAuth()">
+            </div>
+            <div class="modal-field">
+                <label>Password</label>
+                <input type="password" id="authPassword" placeholder="Min. 6 characters" onkeydown="if(event.code==='Enter')submitAuth()">
+            </div>
+            <div id="authError" class="auth-error"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="save-btn" id="authSubmitBtn" onclick="submitAuth()">Sign In</button>
+        </div>
+        <p class="auth-note">No account needed · Import/Export works without signing in</p>
+    </div>
+</div>
+
+<!-- Cloud Flows Modal -->
+<div class="modal-overlay" id="cloudOverlay" onclick="closeCloudModal()">
+    <div class="modal-box cloud-modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 style="font-size:1rem;font-weight:700;">☁ Cloud Flows</h3>
+            <button class="ed-close" onclick="closeCloudModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="cloud-section-label">Save Current Flow</p>
+            <div class="cloud-save-row">
+                <input type="text" id="cloudFlowName" placeholder="Name this flow (e.g. My Pitch v2)">
+                <button class="save-btn" style="flex:none;padding:9px 18px;white-space:nowrap;" onclick="saveToCloud()">Save</button>
+            </div>
+            <p class="cloud-section-label">Saved Flows</p>
+            <div id="cloudFlowsList" class="cloud-flows-list"></div>
+        </div>
+    </div>
+</div>
+
 <input type="file" id="imp" accept=".json" style="display:none" onchange="handleImport(event)">
 
 <script>
@@ -402,11 +487,11 @@ let dragN=null,dragW=null,rewireW=null;
 let selNode=null,selEdge=null;
 
 function init(){
-    const s=localStorage.getItem('d2d_v4'); 
+    const s=localStorage.getItem('d2d_v4');
     D=s?JSON.parse(s):JSON.parse(JSON.stringify(defaultData));
     const sr=localStorage.getItem('d2d_route');
     if(sr){savedRoute=JSON.parse(sr);routeMode='route';}
-    updateTopBtns();resetRun();initMap();
+    updateTopBtns();resetRun();initMap();initSupabase();
 }
 function save(){
     // Auto-create any referenced nodes that don't exist yet so they render instantly
@@ -553,13 +638,21 @@ function advR(){if(routeMode==='route'&&routeStep<savedRoute.length){const oi=sa
 // ═══ KEYBOARD ACCESSIBILITY ═══
 document.addEventListener('keydown',e=>{
     // Modals priority
+    if (document.getElementById('authOverlay').classList.contains('open')) {
+        if (e.code === 'Escape') closeAuthModal();
+        return;
+    }
+    if (document.getElementById('cloudOverlay').classList.contains('open')) {
+        if (e.code === 'Escape') closeCloudModal();
+        return;
+    }
     if (document.getElementById('confirmOverlay').classList.contains('open')) {
         if (e.code === 'Escape') closeConfirm();
-        return; 
+        return;
     }
     if (document.getElementById('editOverlay').classList.contains('open')) {
         if (e.code === 'Escape') closeEdit();
-        return; 
+        return;
     }
     if (document.getElementById('addNodeInput')) {
         if (e.code === 'Escape') document.getElementById('addNodeInput').remove();
@@ -1261,6 +1354,180 @@ function renderMap(){
         h += `</div>`;
     });
     cv.innerHTML=h;
+}
+
+// ═══ SUPABASE / AUTH / CLOUD ═══
+const SB_URL = 'https://oflgauvzeivxtvzfcqyi.supabase.co';
+const SB_KEY = 'sb_publishable_a9yZ76fd59eGt0xgDQo13w_amlqUVxZ';
+let supa = null, authUser = null, _authTab = 'signin';
+
+async function initSupabase() {
+    try {
+        supa = window.supabase.createClient(SB_URL, SB_KEY);
+        const { data: { session } } = await supa.auth.getSession();
+        authUser = session?.user || null;
+        updateAuthUI();
+        supa.auth.onAuthStateChange((_ev, sess) => {
+            authUser = sess?.user || null;
+            updateAuthUI();
+        });
+    } catch(e) { console.warn('Supabase init failed:', e); }
+}
+
+function updateAuthUI() {
+    const btn = document.getElementById('authBtn');
+    const dd = document.getElementById('authDrop');
+    if (!btn) return;
+    if (authUser) {
+        const em = authUser.email || '';
+        const short = em.length > 15 ? em.slice(0, 13) + '…' : em;
+        btn.textContent = '👤 ' + short;
+        if (dd) dd.innerHTML = `
+            <a onclick="openCloudModal()">☁ My Flows</a>
+            <a onclick="doSignOut()">Sign Out</a>`;
+    } else {
+        btn.textContent = '☁ Sign In';
+        if (dd) dd.innerHTML = `
+            <a onclick="openAuthModal('signin')">Sign In</a>
+            <a onclick="openAuthModal('signup')">Sign Up</a>`;
+    }
+}
+
+// ── Auth Modal ──
+function openAuthModal(tab = 'signin') {
+    _authTab = tab;
+    document.getElementById('authOverlay').classList.add('open');
+    document.getElementById('authEmail').value = '';
+    document.getElementById('authPassword').value = '';
+    const errEl = document.getElementById('authError');
+    errEl.textContent = '';
+    errEl.style.color = 'var(--red)';
+    switchAuthTab(tab);
+    setTimeout(() => document.getElementById('authEmail').focus(), 50);
+}
+function closeAuthModal() { document.getElementById('authOverlay').classList.remove('open'); }
+function switchAuthTab(tab) {
+    _authTab = tab;
+    document.getElementById('signinTab').classList.toggle('active', tab === 'signin');
+    document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
+    document.getElementById('authSubmitBtn').textContent = tab === 'signin' ? 'Sign In' : 'Create Account';
+    document.getElementById('authError').textContent = '';
+}
+async function submitAuth() {
+    if (!supa) { toast('Cloud not available'); return; }
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const errEl = document.getElementById('authError');
+    const btn = document.getElementById('authSubmitBtn');
+    if (!email || !password) { errEl.textContent = 'Enter email and password.'; return; }
+    if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+    btn.textContent = '...'; btn.disabled = true;
+    errEl.style.color = 'var(--red)';
+    try {
+        let result;
+        if (_authTab === 'signin') {
+            result = await supa.auth.signInWithPassword({ email, password });
+        } else {
+            result = await supa.auth.signUp({ email, password });
+        }
+        if (result.error) throw result.error;
+        if (_authTab === 'signup' && result.data?.user && !result.data.session) {
+            errEl.style.color = 'var(--green)';
+            errEl.textContent = 'Check your email to confirm your account!';
+        } else {
+            closeAuthModal();
+            toast(_authTab === 'signin' ? 'Signed in!' : 'Account created & signed in!');
+        }
+    } catch(e) {
+        errEl.textContent = e.message || 'Something went wrong. Try again.';
+    } finally {
+        btn.textContent = _authTab === 'signin' ? 'Sign In' : 'Create Account';
+        btn.disabled = false;
+    }
+}
+async function doSignOut() {
+    if (!supa) return;
+    await supa.auth.signOut();
+    toast('Signed out');
+}
+
+// ── Cloud Flows Modal ──
+async function openCloudModal() {
+    if (!supa) { toast('Cloud not available'); return; }
+    if (!authUser) { openAuthModal('signin'); return; }
+    document.getElementById('cloudOverlay').classList.add('open');
+    document.getElementById('cloudFlowName').value = '';
+    loadCloudFlowsList();
+}
+function closeCloudModal() { document.getElementById('cloudOverlay').classList.remove('open'); }
+
+async function loadCloudFlowsList() {
+    const listEl = document.getElementById('cloudFlowsList');
+    listEl.innerHTML = '<div style="color:var(--dim);font-size:0.85rem;padding:8px 0">Loading...</div>';
+    try {
+        const { data, error } = await supa
+            .from('flows')
+            .select('id,name,updated_at')
+            .order('updated_at', { ascending: false });
+        if (error) throw error;
+        if (!data.length) {
+            listEl.innerHTML = '<div style="color:var(--dim);font-size:0.85rem;padding:8px 0;text-align:center">No saved flows yet. Save your current flow above!</div>';
+            return;
+        }
+        listEl.innerHTML = data.map(f => `
+            <div class="cloud-flow-item">
+                <div class="cloud-flow-info">
+                    <span class="cloud-flow-name">${E(f.name)}</span>
+                    <span class="cloud-flow-date">${new Date(f.updated_at).toLocaleDateString()}</span>
+                </div>
+                <div class="cloud-flow-actions">
+                    <button class="mpt-b go" onclick="loadCloudFlow('${E(f.id)}','${E(f.name)}')">Load</button>
+                    <button class="mpt-b danger" onclick="deleteCloudFlow('${E(f.id)}')">🗑</button>
+                </div>
+            </div>`).join('');
+    } catch(e) {
+        listEl.innerHTML = `<div style="color:var(--red);font-size:0.85rem;padding:8px 0">${E(e.message)}</div>`;
+    }
+}
+
+async function saveToCloud() {
+    if (!supa || !authUser) { openAuthModal('signin'); return; }
+    const nameInput = document.getElementById('cloudFlowName');
+    const name = (nameInput?.value || '').trim() || 'My Flow';
+    try {
+        const { error } = await supa.from('flows').insert({ user_id: authUser.id, name, data: D });
+        if (error) throw error;
+        toast('Saved to cloud!');
+        if (nameInput) nameInput.value = '';
+        loadCloudFlowsList();
+    } catch(e) {
+        toast('Save failed: ' + (e.message || 'Unknown error'));
+    }
+}
+
+async function loadCloudFlow(id, name) {
+    try {
+        const { data, error } = await supa.from('flows').select('data').eq('id', id).single();
+        if (error) throw error;
+        closeCloudModal();
+        showConfirm(`Load "${name}"?\n\nThis will replace your current local flow.`, () => {
+            D = data.data;
+            save();
+            resetRun();
+            toast('Loaded: ' + name);
+        });
+    } catch(e) {
+        toast('Load failed: ' + (e.message || 'Unknown error'));
+    }
+}
+
+async function deleteCloudFlow(id) {
+    closeCloudModal();
+    showConfirm('Delete this cloud flow?', async () => {
+        const { error } = await supa.from('flows').delete().eq('id', id);
+        if (error) toast('Delete failed: ' + error.message);
+        else { toast('Deleted'); openCloudModal(); }
+    });
 }
 
 init();
