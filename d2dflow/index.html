@@ -375,7 +375,7 @@
                 <div class="ed-field"><label>Info / Tips</label><textarea id="edInfo" placeholder="Tips..."></textarea></div>
                 <div class="ed-field"><label>Body Language</label><textarea id="edBody" placeholder="Body language..."></textarea></div>
             </div>
-            <div class="ed-field"><label>Customer Responses</label><div id="edOpts"></div><button class="add-opt-btn" onclick="edAddOpt()">+ Add Response</button></div>
+            <div class="ed-field"><div id="edOpts"></div><button class="add-opt-btn" onclick="edAddOpt()">+ Add Response</button></div>
         </div>
         <div class="ed-footer"><button class="save-btn" onclick="saveEdit()">Save</button><button class="del-btn" id="edDel" onclick="deleteNode()">Delete</button></div>
     </div>
@@ -741,12 +741,21 @@ function handleImport(e){const f=e.target.files[0];if(!f)return;const r=new File
 function initMap(){
     const mc=document.getElementById('mc');
 
-    // Mouse pan
+    // Mouse pan (left-click on empty space)
     mc.addEventListener('mousedown',e=>{
         if(e.target.closest('.mn')||e.target.closest('.me')||e.target.closest('.mpt')||e.button!==0)return;
         isPan=true;mc.classList.add('panning');panSX=e.clientX;panSY=e.clientY;panSPX=mPX;panSPY=mPY;
         desel(); e.preventDefault();
     });
+
+    // Middle-mouse pan (works anywhere on canvas, even over nodes/edges)
+    mc.addEventListener('mousedown',e=>{
+        if(e.button!==1)return;
+        if(e.target.closest('.mpt'))return;
+        isPan=true;mc.classList.add('panning');panSX=e.clientX;panSY=e.clientY;panSPX=mPX;panSPY=mPY;
+        e.preventDefault();
+    });
+    mc.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
 
     // Touch: two-finger pan & pinch zoom
     let touches={},lastDist=0;
@@ -1061,8 +1070,7 @@ function showNodeEdit(id){
     h+=`</div>`;
     
     if(n.options&&n.options.length){
-        h+=`<label style="margin-top:12px">Responses (${n.options.length})</label>`;
-        h+=`<div class="opt-headers" style="padding:0 4px;"><div style="flex:1;">Response</div><div style="width:140px;">Target Node</div><div style="width:26px;"></div></div>`;
+        h+=`<div class="opt-headers" style="margin-top:12px;padding:0 4px;"><div style="flex:1;">Response</div><div style="width:140px;">Target Node</div><div style="width:26px;"></div></div>`;
         n.options.forEach((o,i)=>{
             h+=`<div class="mpt-row">
                     <input type="text" value="${E(o.label)}" data-oi="${i}" data-f="label" placeholder="They say...">
