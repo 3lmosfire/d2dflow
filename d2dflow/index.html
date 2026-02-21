@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D2D Flow</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             /* Light theme based on Green, White, Black */
@@ -1318,9 +1319,11 @@ function renderMap(){
     cv.innerHTML=h;
 }
 
-// ═══ AUTH & API ═══
-const API_BASE = window.location.origin + '/api';
-let authToken = null;
+// ═══ SUPABASE AUTH & DATABASE ═══
+const SUPABASE_URL = 'https://oflgauvzeivxtvzfcqyi.supabase.co';
+const SUPABASE_ANON_KEY = '[PASTE YOUR PUBLISHABLE KEY HERE]';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let authUser = null;
 let landingTab = 'login';
 
@@ -1346,25 +1349,29 @@ async function handleAuth() {
     btn.textContent = landingTab === 'login' ? 'Logging in...' : 'Creating account...';
 
     try {
-        const endpoint = landingTab === 'login' ? '/auth/login' : '/auth/register';
-        const res = await fetch(API_BASE + endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) { errEl.textContent = data.error || 'Something went wrong.'; return; }
+        let result;
+        if (landingTab === 'login') {
+            result = await supabase.auth.signInWithPassword({ email, password });
+        } else {
+            result = await supabase.auth.signUp({ email, password });
+        }
 
-        authToken = data.token;
-        authUser = data.email;
-        sessionStorage.setItem('d2d_token', authToken);
-        sessionStorage.setItem('d2d_user', authUser);
+        if (result.error) {
+            errEl.textContent = result.error.message;
+            return;
+        }
 
-        // Try to load saved flow from server
-        await loadFlowFromServer();
+        if (landingTab === 'register' && result.data.user && !result.data.session) {
+            errEl.textContent = 'Check your email to confirm your account, then log in.';
+            errEl.style.color = 'var(--accent)';
+            return;
+        }
+
+        authUser = result.data.user;
+        await loadFlowFromSupabase();
         showApp();
     } catch (e) {
-        errEl.textContent = 'Cannot connect to server. Try guest mode.';
+        errEl.textContent = 'Connection error. Try guest mode.';
     } finally {
         btn.disabled = false;
         btn.textContent = landingTab === 'login' ? 'Log In' : 'Create Account';
@@ -1372,7 +1379,6 @@ async function handleAuth() {
 }
 
 function continueAsGuest() {
-    authToken = null;
     authUser = null;
     showApp();
 }
@@ -1393,60 +1399,57 @@ function updateUserUI() {
     if (authUser) {
         badge.style.display = 'flex';
         logoutBtn.style.display = 'block';
-        emailSpan.textContent = authUser;
+        emailSpan.textContent = authUser.email;
     } else {
         badge.style.display = 'none';
         logoutBtn.style.display = 'none';
     }
 }
 
-function handleLogout() {
-    authToken = null;
+async function handleLogout() {
+    await supabase.auth.signOut();
     authUser = null;
-    sessionStorage.removeItem('d2d_token');
-    sessionStorage.removeItem('d2d_user');
     updateUserUI();
     toast('Logged out');
 }
 
-async function loadFlowFromServer() {
-    if (!authToken) return;
+async function loadFlowFromSupabase() {
+    if (!authUser) return;
     try {
-        const res = await fetch(API_BASE + '/flow', {
-            headers: { 'Authorization': 'Bearer ' + authToken }
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.flow_data) {
-                D = JSON.parse(data.flow_data);
-                localStorage.setItem('d2d_v4', JSON.stringify(D));
-            }
+        const { data, error } = await supabase
+            .from('flows')
+            .select('flow_data')
+            .eq('user_id', authUser.id)
+            .maybeSingle();
+        if (!error && data && data.flow_data) {
+            D = typeof data.flow_data === 'string' ? JSON.parse(data.flow_data) : data.flow_data;
+            localStorage.setItem('d2d_v4', JSON.stringify(D));
         }
-    } catch (e) { /* Server unavailable, use localStorage */ }
+    } catch (e) { /* Supabase unavailable, use localStorage */ }
 }
 
 async function saveFlowToServer() {
-    if (!authToken) return;
+    if (!authUser) return;
     try {
-        await fetch(API_BASE + '/flow', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + authToken
-            },
-            body: JSON.stringify({ flow_data: JSON.stringify(D) })
-        });
-    } catch (e) { /* Server unavailable, local save still works */ }
+        const flowJson = JSON.stringify(D);
+        const { error } = await supabase
+            .from('flows')
+            .upsert({
+                user_id: authUser.id,
+                flow_data: flowJson,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+        if (error) console.error('Supabase save error:', error.message);
+    } catch (e) { /* Supabase unavailable, local save still works */ }
 }
 
-// Check for existing session on page load
-(function checkSession() {
-    const token = sessionStorage.getItem('d2d_token');
-    const user = sessionStorage.getItem('d2d_user');
-    if (token && user) {
-        authToken = token;
-        authUser = user;
-        loadFlowFromServer().then(() => showApp());
+// Check for existing Supabase session on page load
+(async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session && session.user) {
+        authUser = session.user;
+        await loadFlowFromSupabase();
+        showApp();
     }
 })();
 </script>
