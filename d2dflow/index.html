@@ -1323,7 +1323,7 @@ function renderMap(){
 // ═══ SUPABASE AUTH & DATABASE ═══
 const SUPABASE_URL = 'https://oflgauvzeivxtvzfcqyi.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_a9yZ76fd59eGt0xgDQo13w_amlqUVxZ';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let authUser = null;
 let landingTab = 'login';
@@ -1352,9 +1352,9 @@ async function handleAuth() {
     try {
         let result;
         if (landingTab === 'login') {
-            result = await supabase.auth.signInWithPassword({ email, password });
+            result = await sb.auth.signInWithPassword({ email, password });
         } else {
-            result = await supabase.auth.signUp({ email, password });
+            result = await sb.auth.signUp({ email, password });
         }
 
         if (result.error) {
@@ -1408,7 +1408,7 @@ function updateUserUI() {
 }
 
 async function handleLogout() {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     authUser = null;
     updateUserUI();
     toast('Logged out');
@@ -1417,7 +1417,7 @@ async function handleLogout() {
 async function loadFlowFromSupabase() {
     if (!authUser) return;
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('flows')
             .select('flow_data')
             .eq('user_id', authUser.id)
@@ -1433,7 +1433,7 @@ async function saveFlowToServer() {
     if (!authUser) return;
     try {
         const flowJson = JSON.stringify(D);
-        const { error } = await supabase
+        const { error } = await sb
             .from('flows')
             .upsert({
                 user_id: authUser.id,
@@ -1446,7 +1446,7 @@ async function saveFlowToServer() {
 
 // Check for existing Supabase session on page load
 (async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     if (session && session.user) {
         authUser = session.user;
         await loadFlowFromSupabase();
