@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="#557827"/>
-  <path d="M8 8h6c5.523 0 10 4.477 10 8s-4.477 8-10 8H8V8z" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
-  <circle cx="24" cy="10" r="2.5" fill="#fff" opacity="0.9"/>
-  <circle cx="26" cy="22" r="2" fill="#fff" opacity="0.7"/>
-  <line x1="20" y1="10" x2="24" y2="10" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
-  <line x1="21" y1="20" x2="26" y2="22" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+	<defs>
+		<image  width="48" height="48" id="img1" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IB2cksfwAAAaFQTFRFAAAA/////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/+/v7+///+////8vXvo7aNfZheeJRXp7mS8/Xw1N3KYII6VXksaIdD1N7K+Pr3gJthVHgrgJph/Pz7////2eHQXoA4XH416u/l1d7LV3ov4+nd6+/maolGaYlG9ffyq72XrL2Y+/z6uMenVnouVXgsVnotbItIv8yv7fHp3eTV2uHR7vLq8fTu7/Pr/P381t7Md5NWZIQ+YYM8eJRY2+LSvsuuV3svVHgsWn0yvsyuc5BRc5FR+fr3z9nDWXwx5+zh0dvGWn0zWXwy6O3ixNG2WHsvWnwyxdG22OHPjKVxcpBRbYxKcpBQjqZz8vTu7fHo2uLRrb+aX4E5VXkttcWjprmRprmQytW94unc2ODOXoA3XX82f5ph3OTUYYI7Z4dD3OPTr8Cclat7kah2ssKf////////////////////////////////V3CnvQAAAIt0Uk5TABV1tuT6/PnicBMIYNf+/9AFA6WblAn4YdgKXLX///+0//////////////////////3///////////////////////////////////////////////////////////////////////////////////////////////////////////9UFNGJYguzVef6bI8AAAIJSURBVHicY2QAAUYwYMANGBl/szF+A7OAmJuAagj4z/SH9T1YgxDjZ06CykHgO9+/d0AN3Bx/iFIOAmyMrxgZeH4RZz4IcDC+YGSU+Ea0egaGf7yMTDyE/YsA/3kZZT6jCvGh6mf8gCotyMjCjcwXQg/g/0yML5H5XxlZuZC4Eljig5HxCRKPg5ENKYxkGf+wYmgARvF9BE8JRYMy428M9aDAv4VLg/q/X1g0cDJex6VBi/ELFg28jJdxaWDQe4PFD6IXkXhoGgwYf7GjxQMj468LuDUwMJhjxMMxFD6GBkKAcg0G3OhOOoxXgx2WtLQXjwYXRsabaG74rcu4A6cGIfO/6OqBQJtxKy4NPoyXMNUz6DFuwqXBn/E8Fg1GjOtIc5IWE04nMQQznsZQb8a4ComHHqzh6MHKyHjnBAMeDQwGuvdR+IQijiCgXEPcLXUU/k38ydvAAKOc2e51Fk8GStmGJYt6z8apQY2VxEIg7cxbLBpEjWfi0pDBuA2LBu8D13BpwFpUMvhsQykq2TmQ5HIYj71BV+/POBGJx8HIwY4sKxSHkUWXoBT3PxmZebA4GzcQZORkJanKKmVsYewiQQMjFyODxDsSqt2vXxgZBJmx1SLYQXn3e1DTgfkTB2G1QPCjvucduHEiVjjpKxGNk/LJPyGNEyDomJxXLSyFR/WzjxJZE56BWADwlnnZWe1jHwAAAABJRU5ErkJggg=="/>
+	</defs>
+	<style>
+	</style>
+	<use id="Background" href="#img1" x="0" y="0"/>
 </svg>
