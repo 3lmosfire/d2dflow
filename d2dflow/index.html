@@ -35,10 +35,16 @@
 
         /* ═══ TOPBAR ═══ */
         .topbar { position:sticky; top:0; z-index:100; background:var(--bg2); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 4px rgba(0,0,0,0.02); }
-        .logo { font-weight:800; font-size:1.1rem; color:var(--text); letter-spacing:-0.5px; }
+        .topbar-left { display:flex; align-items:center; gap:12px; }
+        .logo { font-weight:800; font-size:1.5rem; color:var(--text); letter-spacing:-0.5px; }
         .logo span { color:var(--accent); }
+        .user-info { display:flex; align-items:center; gap:6px; font-size:0.8rem; font-weight:600; padding:0 8px; }
+        .user-info .user-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; }
+        .user-info .user-email-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+        .user-info.logged-in { color:var(--accent); }
+        .user-info.guest { color:var(--dim); }
         .mode-switcher { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:6px; gap:8px; }
-        .mode-btn { padding:8px 20px; border:none; border-radius:6px; background:transparent; color:var(--dim); font-family:inherit; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .mode-btn { padding:8px 20px; border:none; border-radius:6px; background:transparent; color:var(--dim); font-family:inherit; font-size:0.95rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
         .mode-btn.active { background:var(--bg2); color:var(--accent); box-shadow:0 1px 3px rgba(0,0,0,0.05); }
         .mode-btn:hover:not(.active) { color:var(--text); }
         
@@ -55,8 +61,8 @@
         #mainSaveBtn.saved-state:hover { filter: none; background: var(--surface2); }
         #mainSaveBtn.guest-disabled { background: #ccc; color: #888; border-color: #bbb; cursor: not-allowed; text-decoration: line-through; pointer-events: none; filter: none; }
         .save-btn-wrap { position: relative; display: inline-flex; }
-        .save-btn-wrap .guest-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; font-size: 0.7rem; font-weight: 500; padding: 6px 10px; border-radius: 6px; white-space: nowrap; z-index: 300; pointer-events: none; }
-        .save-btn-wrap .guest-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--text); }
+        .save-btn-wrap .guest-tooltip { display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; font-size: 0.7rem; font-weight: 500; padding: 6px 10px; border-radius: 6px; white-space: nowrap; z-index: 300; pointer-events: none; }
+        .save-btn-wrap .guest-tooltip::after { content:''; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-bottom-color:var(--text); }
         .save-btn-wrap:hover .guest-tooltip { display: block; }
 
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
@@ -251,7 +257,7 @@
         .port-in-dot { position:absolute; width:8px; height:8px; left:50%; top:-4px; transform:translateX(-50%); background:var(--dim); border-radius:50%; pointer-events:none; }
         .port-out { position:absolute; width:8px; height:8px; bottom:-4px; transform:translateX(-50%); cursor:crosshair; background:var(--dim); border:2px solid var(--dim); border-radius:50%; z-index:8; transition:all 0.15s; box-sizing:border-box; }
         .port-out:hover { background:var(--surface2); border-color:var(--accent); width:14px; height:14px; bottom:-7px; }
-        .port-out::before { content:''; position:absolute; inset:-12px; border-radius:50%; z-index:-1; }
+        .port-out::before { content:''; position:absolute; inset:-4px -12px -12px -12px; border-radius:50%; z-index:-1; }
         .port-out-empty { opacity:0; }
         .mn:hover .port-out-empty, .port-out-empty:hover { opacity:1; }
 
@@ -339,10 +345,7 @@
         .landing-error { font-size:0.8rem; color:var(--red); font-weight:500; min-height:20px; margin-top:2px; }
 
         /* ═══ USER STATUS IN TOPBAR ═══ */
-        .user-badge { display:flex; align-items:center; gap:8px; padding:0 12px; height:36px; background:var(--accent-glow); border:1px solid rgba(85,120,39,0.25); border-radius:6px; font-size:0.8rem; font-weight:600; color:var(--accent); }
-        .user-badge .user-dot { width:7px; height:7px; border-radius:50%; background:var(--green); }
-        .logout-btn { padding:0 10px; height:36px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--dim); font-family:inherit; font-size:0.75rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
-        .logout-btn:hover { color:var(--red); border-color:var(--red); background:var(--red-glow); }
+        .settings-dots { font-size:1.3rem; letter-spacing:1px; padding:0 10px !important; line-height:1; font-weight:700; }
     </style>
 </head>
 <body>
@@ -382,26 +385,22 @@
 </div>
 
 <div class="topbar">
-    <div class="logo">D2D <span>FLOW</span></div>
-    <div class="mode-switcher">
-        <button class="mode-btn active" data-mode="learn" onclick="setMode('learn')">Learn</button>
-        <button class="mode-btn" data-mode="recall" onclick="setMode('recall')">Recall</button>
-        <button class="mode-btn" data-mode="hard" onclick="setMode('hard')">Hard</button>
+    <div class="topbar-left">
+        <div class="logo">D2D <span>FLOW</span></div>
+        <div class="mode-switcher">
+            <button class="mode-btn active" data-mode="learn" onclick="setMode('learn')">Learn</button>
+            <button class="mode-btn" data-mode="recall" onclick="setMode('recall')">Recall</button>
+            <button class="mode-btn" data-mode="hard" onclick="setMode('hard')">Hard</button>
+        </div>
+        <div class="user-info guest" id="userInfo">
+            <span id="userEmail" class="user-email-text">guest user</span>
+        </div>
     </div>
     <div class="top-actions">
-        <div class="user-badge" id="userBadge" style="display:none;"><div class="user-dot"></div><span id="userEmail"></span></div>
-        <button class="logout-btn" id="logoutBtn" style="display:none;" onclick="handleLogout()">Log Out</button>
         <button class="tbtn" id="routeToggleBtn" onclick="toggleRouteMode()">⚡ Random</button>
         <button class="tbtn" id="recordBtn" onclick="toggleRecording()">⏺ Record</button>
         <button class="tbtn" onclick="resetRun()">↺ Restart</button>
         <button class="tbtn" onclick="openEditCurrent()">✎ Edit</button>
-        <div class="dropdown">
-            <button class="tbtn">⚙️ Data</button>
-            <div class="dropdown-content">
-                <a onclick="exportData()">↓ Export (.json)</a>
-                <a onclick="document.getElementById('imp').click()">↑ Import (.json)</a>
-            </div>
-        </div>
         <button class="tbtn" onclick="openMap()" style="color:var(--text);">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
                 <rect x="8" y="3" width="8" height="6" rx="1"></rect>
@@ -415,6 +414,14 @@
                 <rect x="16" y="16" width="6" height="5" rx="1"></rect>
             </svg> Flowchart
         </button>
+        <div class="dropdown" id="settingsMenu">
+            <button class="tbtn settings-dots">⋯</button>
+            <div class="dropdown-content">
+                <a onclick="exportData()">↓ Export (.json)</a>
+                <a onclick="document.getElementById('imp').click()">↑ Import (.json)</a>
+                <a id="settingsAuthLink" onclick="handleSettingsAuth()">Log Out</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -488,6 +495,14 @@
                 <span class="mzl" id="mzl">100%</span>
                 <button class="mzb" onclick="mZoom(0.15)">+</button>
                 <button class="mzb" onclick="mFit()" style="font-size:0.75rem">⊞</button>
+            </div>
+            <div class="dropdown" id="mapSettingsMenu">
+                <button class="tbtn settings-dots">⋯</button>
+                <div class="dropdown-content">
+                    <a onclick="exportData()">↓ Export (.json)</a>
+                    <a onclick="document.getElementById('imp').click()">↑ Import (.json)</a>
+                    <a id="mapSettingsAuthLink" onclick="handleSettingsAuth()">Log Out</a>
+                </div>
             </div>
             <button class="ed-close" onclick="closeMap()" style="background:var(--surface); border-color:var(--border);">✕</button>
         </div>
@@ -585,11 +600,16 @@ function assignDefaultCoords() {
     });
 }
 
-function init(){
-    const s=localStorage.getItem('d2d_v4'); 
-    D=s?JSON.parse(s):JSON.parse(JSON.stringify(defaultData));
+function init(skipLocalLoad){
+    if (!skipLocalLoad) {
+        const s=localStorage.getItem('d2d_v4');
+        D=s?JSON.parse(s):JSON.parse(JSON.stringify(defaultData));
+    }
+    if (!D || Object.keys(D).length === 0) {
+        D = JSON.parse(JSON.stringify(defaultData));
+    }
     migrateD();
-    pushHistoryState(); 
+    pushHistoryState();
     const sr=localStorage.getItem('d2d_route');
     if(sr){savedRoute=JSON.parse(sr);routeMode='route';}
     updateTopBtns();resetRun();initMap();
@@ -2185,37 +2205,48 @@ function showApp() {
     overlay.classList.add('hidden');
     setTimeout(() => overlay.style.display = 'none', 400);
     updateUserUI();
-    if (!appStarted) { appStarted = true; init(); }
+    if (!appStarted) { appStarted = true; init(!!authUser); }
 }
 
 function updateUserUI() {
-    const badge = document.getElementById('userBadge');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const userInfoEl = document.getElementById('userInfo');
     const emailSpan = document.getElementById('userEmail');
     const saveBtn = document.getElementById('mainSaveBtn');
     const saveTxt = document.getElementById('mainSaveText');
     const tooltip = document.getElementById('guestTooltip');
+    const settingsAuth = document.getElementById('settingsAuthLink');
+    const mapSettingsAuth = document.getElementById('mapSettingsAuthLink');
     if (authUser) {
-        badge.style.display = 'flex';
-        logoutBtn.style.display = 'block';
+        userInfoEl.className = 'user-info logged-in';
         emailSpan.textContent = authUser.email;
         if (saveBtn) { saveBtn.classList.remove('guest-disabled'); saveBtn.disabled = false; }
         if (saveTxt) saveTxt.textContent = 'Save';
         if (tooltip) tooltip.style.display = 'none';
+        if (settingsAuth) settingsAuth.textContent = 'Log Out';
+        if (mapSettingsAuth) mapSettingsAuth.textContent = 'Log Out';
     } else {
-        badge.style.display = 'none';
-        logoutBtn.style.display = 'none';
+        userInfoEl.className = 'user-info guest';
+        emailSpan.textContent = 'guest user';
         if (saveBtn) { saveBtn.classList.add('guest-disabled'); saveBtn.disabled = true; }
         if (saveTxt) saveTxt.textContent = 'Save to Cloud';
         if (tooltip) tooltip.style.removeProperty('display');
+        if (settingsAuth) settingsAuth.textContent = 'Log In';
+        if (mapSettingsAuth) mapSettingsAuth.textContent = 'Log In';
     }
 }
 
 async function handleLogout() {
     await sb.auth.signOut();
     authUser = null;
-    updateUserUI();
-    toast('Logged out');
+    location.reload();
+}
+
+function handleSettingsAuth() {
+    if (authUser) {
+        handleLogout();
+    } else {
+        location.reload();
+    }
 }
 
 async function loadFlowFromSupabase() {
@@ -2224,9 +2255,12 @@ async function loadFlowFromSupabase() {
         const { data, error } = await sb.from('flows').select('flow_data').eq('user_id', authUser.id).maybeSingle();
         if (!error && data && data.flow_data) {
             D = typeof data.flow_data === 'string' ? JSON.parse(data.flow_data) : data.flow_data;
-            localStorage.setItem('d2d_v4', JSON.stringify(D));
+        } else {
+            D = JSON.parse(JSON.stringify(defaultData));
         }
-    } catch (e) { }
+    } catch (e) {
+        D = JSON.parse(JSON.stringify(defaultData));
+    }
 }
 
 async function saveFlowToServer() {
