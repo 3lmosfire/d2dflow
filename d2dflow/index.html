@@ -53,6 +53,11 @@
         #mainSaveBtn:hover { filter: brightness(1.05); }
         #mainSaveBtn.saved-state { background: var(--surface2); color: var(--dim); border-color: var(--border); }
         #mainSaveBtn.saved-state:hover { filter: none; background: var(--surface2); }
+        #mainSaveBtn.guest-disabled { background: #ccc; color: #888; border-color: #bbb; cursor: not-allowed; text-decoration: line-through; pointer-events: none; filter: none; }
+        .save-btn-wrap { position: relative; display: inline-flex; }
+        .save-btn-wrap .guest-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; font-size: 0.7rem; font-weight: 500; padding: 6px 10px; border-radius: 6px; white-space: nowrap; z-index: 300; pointer-events: none; }
+        .save-btn-wrap .guest-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--text); }
+        .save-btn-wrap:hover .guest-tooltip { display: block; }
 
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
@@ -469,11 +474,14 @@
                     <path d="M4 6h16"></path><path d="M6 12h12"></path><path d="M8 18h8"></path>
                 </svg> Clean Up
             </button>
-            <button class="tbtn" id="mainSaveBtn" onclick="fullSave()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline>
-                </svg> <span id="mainSaveText">Save</span>
-            </button>
+            <div class="save-btn-wrap" id="saveBtnWrap">
+                <button class="tbtn" id="mainSaveBtn" onclick="fullSave()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block;">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline>
+                    </svg> <span id="mainSaveText">Save</span>
+                </button>
+                <span class="guest-tooltip" id="guestTooltip">Saving to local session. Create an account for cloud storage.</span>
+            </div>
             <button class="tbtn" style="background:var(--surface);color:var(--text);border:1px solid var(--border);" onclick="addNewNode()">+ Add Node</button>
             <div class="map-zoom-controls">
                 <button class="mzb" onclick="mZoom(-0.15)">−</button>
@@ -549,6 +557,32 @@ function migrateD() {
         n.info = n.versions[n.activeVersion].info;
         n.bodyLang = n.versions[n.activeVersion].bodyLang;
     });
+    assignDefaultCoords();
+}
+
+function assignDefaultCoords() {
+    const needsCoords = Object.keys(D).some(k => D[k].x === undefined || D[k].y === undefined);
+    if (!needsCoords) return;
+    const layers = {}, q = [{id:'start',d:0}], vis = new Set(['start']);
+    while (q.length) {
+        const c = q.shift();
+        if (!layers[c.d]) layers[c.d] = [];
+        layers[c.d].push(c.id);
+        const n = D[c.id] || {options:[]};
+        if (n.options) n.options.forEach(o => {
+            if (!vis.has(o.next) && D[o.next]) { vis.add(o.next); q.push({id:o.next, d:c.d+1}); }
+        });
+    }
+    Object.keys(D).forEach(k => { if (!vis.has(k)) { if (!layers[0]) layers[0] = []; layers[0].push(k); } });
+    Object.keys(layers).forEach(d => {
+        const di = parseInt(d);
+        layers[di].forEach((id, i) => {
+            if (D[id].x === undefined || D[id].y === undefined) {
+                D[id].x = i * 240 + 80;
+                D[id].y = di * 160 + 80;
+            }
+        });
+    });
 }
 
 function init(){
@@ -609,11 +643,16 @@ function fullSave() {
     if (document.getElementById('editOverlay').classList.contains('open') && currentEdId) {
         commitEd(currentEdId);
     }
-    localSave(); 
-    
-    saveFlowToServer();
-    setSaved();
-    toast('Flow saved to cloud!');
+    localSave();
+
+    if (authUser) {
+        saveFlowToServer();
+        setSaved();
+        toast('Flow saved to cloud!');
+    } else {
+        setSaved();
+        toast('Flow saved locally.');
+    }
 }
 
 function markUnsaved() {
@@ -2153,13 +2192,22 @@ function updateUserUI() {
     const badge = document.getElementById('userBadge');
     const logoutBtn = document.getElementById('logoutBtn');
     const emailSpan = document.getElementById('userEmail');
+    const saveBtn = document.getElementById('mainSaveBtn');
+    const saveTxt = document.getElementById('mainSaveText');
+    const tooltip = document.getElementById('guestTooltip');
     if (authUser) {
         badge.style.display = 'flex';
         logoutBtn.style.display = 'block';
         emailSpan.textContent = authUser.email;
+        if (saveBtn) { saveBtn.classList.remove('guest-disabled'); saveBtn.disabled = false; }
+        if (saveTxt) saveTxt.textContent = 'Save';
+        if (tooltip) tooltip.style.display = 'none';
     } else {
         badge.style.display = 'none';
         logoutBtn.style.display = 'none';
+        if (saveBtn) { saveBtn.classList.add('guest-disabled'); saveBtn.disabled = true; }
+        if (saveTxt) saveTxt.textContent = 'Save to Cloud';
+        if (tooltip) tooltip.style.removeProperty('display');
     }
 }
 
@@ -2189,6 +2237,11 @@ async function saveFlowToServer() {
         if (error) console.error('Supabase save error:', error.message);
     } catch (e) { }
 }
+
+// ═══ GUEST SESSION AUTO-SAVE ═══
+window.addEventListener('beforeunload', () => {
+    try { localStorage.setItem('d2d_v4', JSON.stringify(D)); } catch(e) {}
+});
 
 (async function checkSession() {
     const { data: { session } } = await sb.auth.getSession();
