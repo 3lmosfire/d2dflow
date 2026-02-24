@@ -11,21 +11,20 @@
   <p>Please wait just a second while we log you in to D2D Flow.</p>
 
   <script>
-// 1. Put your actual Supabase project URL and Publishable Key here!
     const supabaseUrl = 'https://oflgauvzeivxtvzfcqyi.supabase.co'; 
     const supabaseAnonKey = 'sb_publishable_a9yZ76fd59eGt0xgDQo13w_amlqUVxZ'; 
     
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    // 2. This function runs automatically to check the link
+    // FIX: We changed the name to "supabaseClient" so it doesn't clash!
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
     async function verifyEmail() {
-      // Look at the web address and grab the hidden tokens
       const urlParams = new URLSearchParams(window.location.search);
       const token_hash = urlParams.get('token_hash');
       const type = urlParams.get('type');
 
       if (token_hash && type) {
-        // Tell Supabase to verify the tokens
-        const { error } = await supabase.auth.verifyOtp({
+        // FIX: Using the new "supabaseClient" name here too
+        const { error } = await supabaseClient.auth.verifyOtp({
           token_hash: token_hash,
           type: type
         });
@@ -41,7 +40,6 @@
       }
     }
 
-    // Run the function
     verifyEmail();
   </script>
 
