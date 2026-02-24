@@ -44,10 +44,10 @@
         
         .top-actions { display:flex; gap:8px; align-items:center; }
         
-        .route-switch { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; position: relative; cursor: pointer; height: 36px; align-items: center; box-sizing: border-box; width: 72px; padding: 0; margin: 0; user-select: none; transition: all 0.15s ease; }
-        .rs-thumb { position: absolute; width: 32px; height: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); z-index: 1; left: 3px; }
-        .route-switch.on .rs-thumb { transform: translateX(32px); }
-        .rs-icon { flex: 1; display: flex; align-items: center; justify-content: center; z-index: 2; color: var(--dim); transition: color 0.15s ease; pointer-events: none; }
+        .route-switch { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 18px; position: relative; cursor: pointer; height: 34px; align-items: center; box-sizing: border-box; width: 64px; padding: 0; margin: 0; user-select: none; transition: all 0.15s ease; }
+        .rs-thumb { position: absolute; width: 28px; height: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); z-index: 1; left: 2px; top: 50%; transform: translateY(-50%); }
+        .route-switch.on .rs-thumb { transform: translateY(-50%) translateX(32px); }
+        .rs-icon { width: 32px; height: 34px; display: flex; align-items: center; justify-content: center; z-index: 2; color: var(--dim); transition: color 0.15s ease; pointer-events: none; flex-shrink: 0; }
         .route-switch:not(.on) .rs-icon.random { color: var(--accent); }
         .route-switch.on .rs-icon.route { color: var(--blue); }
 
@@ -149,7 +149,12 @@
         
         .info-wrapper { position:relative; display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:var(--surface2); color:var(--dim); font-family:'JetBrains Mono',monospace; font-size:0.8rem; font-weight:600; border:1px solid var(--border); cursor:help; z-index:10; transition: all 0.15s ease; }
         .info-wrapper::before { content:''; position:absolute; inset:-8px; border-radius:50%; z-index:-1; } 
-        .info-wrapper:hover { color:var(--accent); border-color:var(--accent); z-index:999; background: var(--surface); }
+        
+        .recall-diff-btn { height:24px; padding:0 10px; border-radius:999px; background:var(--surface2); border:1px solid var(--border); color:var(--dim); font-family:'JetBrains Mono',monospace; font-size:0.7rem; font-weight:800; cursor:pointer; transition:all 0.15s ease; display:inline-flex; align-items:center; justify-content:center; letter-spacing:0.5px; }
+        .recall-diff-btn:hover { background:var(--surface); border-color:var(--accent); color:var(--accent); }
+        .recall-diff-btn:active { transform: translateY(1px); }
+
+.info-wrapper:hover { color:var(--accent); border-color:var(--accent); z-index:999; background: var(--surface); }
         
         .info-tooltip { position:absolute; top:130%; left:50%; width:max-content; max-width:280px; background:var(--surface); border:1px solid var(--border); padding:12px 16px; border-radius:8px; font-size:0.8rem; color:var(--text); box-shadow:0 8px 24px rgba(0,0,0,0.15); opacity:0; pointer-events:none; transform:translateX(-50%) translateY(-6px); transition:all 0.2s ease; line-height:1.5; font-family:'Outfit',sans-serif; font-weight:400; text-transform:none; letter-spacing:normal; text-align:left; z-index:9999; visibility: hidden; }
         .info-wrapper:hover .info-tooltip { opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
@@ -215,7 +220,7 @@
         
         .script-full, .script-recall, .script-hard { font-size:1.15rem; line-height:1.7; font-weight:400; position:relative; z-index:5; }
         .recall-first { color:var(--text); }
-        .recall-hide { color:transparent; text-decoration:underline; text-decoration-color:var(--border); text-decoration-thickness:2px; text-underline-offset:2px; text-decoration-skip-ink:none; }
+        .recall-hide { color:transparent; text-decoration:underline; text-decoration-color:var(--border); text-decoration-thickness:1px; text-underline-offset:1px; text-decoration-skip-ink:none; }
         .recall-punct, .revealed-word { color:var(--text); }
         .script-hard .sentence { display:inline; transition:all 0.4s; }
         .script-hard .sentence.hidden { color:transparent; background:var(--surface2); border-radius:4px; user-select:none; padding:0 2px; }
@@ -299,6 +304,9 @@
         .save-btn:hover { filter:brightness(1.05); }
         .del-btn { padding:10px 14px; background:transparent; border:1px solid var(--border); color:var(--red); border-radius:8px; font-family:inherit; font-weight:600; font-size:0.8rem; cursor:pointer; transition:all 0.15s ease; }
         .del-btn:hover { background:var(--red-glow); border-color:var(--red); }
+        .confirm-btn { padding:10px 14px; background:transparent; border:1px solid var(--border); color:var(--green); border-radius:8px; font-family:inherit; font-weight:600; font-size:0.8rem; cursor:pointer; transition:all 0.15s ease; }
+        .confirm-btn:hover { background:var(--green-glow); border-color:var(--green); }
+        .confirm-btn.default-active { box-shadow:0 0 0 3px var(--green-glow); border-color:var(--green); background:var(--green-glow); }
 
         /* ═══ TOAST & CONFIRM & PROMPT ═══ */
         .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(60px); background:var(--surface); border:1px solid var(--green); color:var(--green); padding:10px 20px; border-radius:8px; font-size:0.85rem; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.05); z-index:900; opacity:0; visibility:hidden; transition:all 0.3s cubic-bezier(0.16,1,0.3,1); pointer-events:none; }
@@ -310,11 +318,11 @@
         .confirm-title { font-size:1.1rem; margin-bottom:12px; font-weight:700; }
         .confirm-title::before { content:'⚠️ '; }
         .prompt-title { font-size:1.1rem; margin-bottom:12px; font-weight:700; }
-        .prompt-title::before { content:'📝 '; }
         .confirm-msg { font-size:0.9rem; color:var(--dim); line-height:1.5; margin-bottom:24px; white-space:pre-wrap; }
         .confirm-actions { display:flex; justify-content:flex-end; gap:12px; }
         .confirm-actions button:focus-visible, .confirm-actions button:focus { outline:none; }
         .confirm-actions .del-btn:focus { box-shadow:0 0 0 3px var(--red-glow); border-color:var(--red); background:var(--red-glow); }
+        .confirm-actions .confirm-btn:focus { box-shadow:0 0 0 3px var(--green-glow); border-color:var(--green); background:var(--green-glow); }
         .confirm-actions .tbtn:focus { box-shadow:0 0 0 3px var(--accent-glow); border-color:var(--accent); }
 
         /* ═══ MAP VISUALIZER ═══ */
@@ -507,10 +515,10 @@
         <div class="route-switch" id="routeSwitchWrap" onclick="toggleRouteMode()" title="Toggle Random/Route Mode">
             <div class="rs-thumb" id="rsThumb"></div>
             <div class="rs-icon random">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect><circle cx="9" cy="9" r="1.5" fill="currentColor"></circle><circle cx="15" cy="15" r="1.5" fill="currentColor"></circle></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect><circle cx="9" cy="9" r="1.5" fill="currentColor"></circle><circle cx="15" cy="15" r="1.5" fill="currentColor"></circle></svg>
             </div>
             <div class="rs-icon route">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             </div>
         </div>
 
@@ -592,7 +600,7 @@
 
 <div class="toast" id="toast"></div>
 
-<div class="confirm-overlay" id="confirmOverlay">
+<div class="confirm-overlay" id="confirmOverlay" onclick="closeConfirm()">
     <div class="confirm-modal" onclick="event.stopPropagation()">
         <h3 class="confirm-title">Warning</h3>
         <p class="confirm-msg" id="confirmMsg"></p>
@@ -603,13 +611,13 @@
     </div>
 </div>
 
-<div class="confirm-overlay" id="promptOverlay">
+<div class="confirm-overlay" id="promptOverlay" onclick="closePrompt()">
     <div class="confirm-modal" onclick="event.stopPropagation()">
-        <h3 class="prompt-title" id="promptTitle">📝 Create Flow</h3>
+        <h3 class="prompt-title" id="promptTitle">Create Flow</h3>
         <input type="text" id="promptInput" style="width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:8px; font-family:inherit; font-size:0.9rem; outline:none; margin-bottom:20px; transition: border 0.15s ease;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
         <div class="confirm-actions">
             <button class="tbtn" onclick="closePrompt()">Cancel</button>
-            <button class="save-btn" id="promptYesBtn" style="width:auto; padding:8px 16px;">Create</button>
+            <button class="confirm-btn default-active" id="promptYesBtn">Create</button>
         </div>
     </div>
 </div>
@@ -698,22 +706,26 @@
 <script>
 // ═══ DATA & HISTORY ═══
 const defaultData = {
-    start:{text:"Opening line placeholder.",info:"Smile and drop your tonality.",bodyLang:"Half-step back, hands visible.",options:[{label:"Not interested",next:"objection_1"},{label:"Tell me more",next:"hook"},{label:"Who are you with?",next:"company"}]},
-    objection_1:{text:"Snapback placeholder.",options:[{label:"OK what is it?",next:"hook"},{label:"No really, I'm good",next:"soft_close"}]},
-    hook:{text:"Hook placeholder.",options:[{label:"How much?",next:"pricing"},{label:"We already have someone",next:"competitor"}]},
-    company:{text:"Company intro placeholder.",options:[{label:"What's the deal?",next:"pricing"}]},
-    competitor:{text:"Competitor reframe placeholder.",options:[{label:"OK show me",next:"pricing"},{label:"I'm happy with them",next:"soft_close"}]},
-    pricing:{text:"Pricing placeholder.",options:[{label:"Too expensive",next:"price_obj"},{label:"Let's do it",next:"booked"},{label:"Need to ask spouse",next:"spouse_obj"}]},
-    price_obj:{text:"Price objection placeholder.",options:[{label:"OK let's do it",next:"booked"},{label:"Still no",next:"soft_close"}]},
-    spouse_obj:{text:"Spouse objection placeholder.",options:[{label:"Fair enough",next:"booked"},{label:"I really need to ask",next:"soft_close"}]},
-    booked:{text:"Booking placeholder.",options:[]},
-    soft_close:{text:"Soft close placeholder.",options:[]}
+    start:{text:"Hey there! I'm [Name] with [Company] — we're actually out in the neighborhood today because we've been helping a bunch of your neighbors lower their [service] bills. I'm not here to sell you anything, just wanted to see if you'd be open to seeing how much you could save.",info:"Smile, be friendly. Match their energy. Stand at a comfortable distance.",bodyLang:"Half-step back, hands visible, relaxed posture.",options:[{label:"Not interested",next:"ni_objection"},{label:"What company?",next:"company_intro"},{label:"What is it exactly?",next:"the_hook"},{label:"How much does it cost?",next:"pricing"}]},
+    ni_objection:{text:"Totally get it — most people say that at first. I'm not asking you to commit to anything, I literally just need 30 seconds to show you what your neighbors are already saving. If it doesn't make sense, I'll be the first to tell you.",info:"Stay relaxed, don't get defensive. This is the most common objection — expect it every time.",bodyLang:"Nod, keep smiling, slight lean back.",options:[{label:"Fine, go ahead",next:"the_hook"},{label:"I'm really not interested",next:"hard_no"},{label:"What company is this?",next:"company_intro"}]},
+    company_intro:{text:"Great question — we're with [Company]. We've been in the area for [timeframe] working directly with homeowners to get them better rates on their [service]. You've probably seen our trucks around the neighborhood.",info:"Keep it brief. Don't over-explain — pivot quickly to the hook.",bodyLang:"Confident, point down the street casually.",options:[{label:"Never heard of you",next:"credibility"},{label:"OK what's the deal?",next:"the_hook"}]},
+    credibility:{text:"That's fair — we work mostly through referrals so we don't do a ton of advertising. But your neighbor [direction] just signed up last week and they're saving about $[X] a month. I'd love to see if we can do the same for you.",info:"Name-drop neighbors or reference visible signs/trucks if possible.",bodyLang:"Gesture toward nearby houses.",options:[{label:"Alright, show me",next:"the_hook"},{label:"I need to think about it",next:"spouse_stall"}]},
+    the_hook:{text:"So here's the deal — right now your [current provider] is probably charging you around $[X] a month. What we do is lock you in at a lower rate, usually saving people anywhere from $[range] a month. And the switch takes about 15 minutes, we handle everything.",info:"This is your moment — be specific with numbers. Use a clipboard or tablet to show visuals if you have them.",bodyLang:"Show paperwork/tablet, maintain eye contact.",options:[{label:"How much does it cost?",next:"pricing"},{label:"We already have a provider",next:"competitor_obj"},{label:"Sounds too good to be true",next:"skepticism_obj"}]},
+    pricing:{text:"That's the best part — there's no upfront cost to switch. Your first bill will actually be lower than what you're paying now. Most people in the neighborhood are saving between $[range] per month, and you're locked in at that rate.",info:"Always lead with 'no upfront cost.' Be specific about savings ranges.",bodyLang:"Point to the numbers on your sheet.",options:[{label:"That's too expensive",next:"price_objection"},{label:"Let me think about it",next:"spouse_stall"},{label:"OK let's do it",next:"close"}]},
+    competitor_obj:{text:"Perfect, that's actually exactly why I'm here. Most of your neighbors were with [competitor] too before they switched. We're not asking you to leave them in the dark — we just lock you in at a lower rate. You'll still get the same [service], just for less money.",info:"Don't bash the competitor. Position the switch as a no-brainer upgrade.",bodyLang:"Nod along, empathize.",options:[{label:"I'm happy with who I have",next:"happy_provider"},{label:"OK show me the numbers",next:"the_hook"}]},
+    happy_provider:{text:"I hear you, and I'm glad you've had a good experience. The only reason I bring it up is because [competitor] actually raised their rates about [X] months ago. A lot of people don't even realize they're overpaying. Can I at least show you a quick comparison? If it doesn't save you money, no worries.",info:"Plant the seed of doubt without being pushy. Offering a comparison is low commitment.",bodyLang:"Calm, non-threatening. Clipboard ready.",options:[{label:"Fine, show me",next:"the_hook"},{label:"No thanks",next:"hard_no"}]},
+    skepticism_obj:{text:"I know it sounds that way — I'd probably think the same thing! That's why I always tell people, don't take my word for it. Here's what your neighbor at [address/direction] is paying right now after they switched. The numbers speak for themselves.",info:"Social proof is your best weapon here. Reference real nearby customers.",bodyLang:"Show proof on tablet/clipboard.",options:[{label:"OK I'm listening",next:"pricing"},{label:"I still don't know...",next:"spouse_stall"}]},
+    price_objection:{text:"I totally understand — nobody wants to feel like they're spending more. But here's the thing: you're already paying $[X] a month. We're actually bringing that down, not up. So you're not spending more, you're keeping more in your pocket each month.",info:"Reframe: they're not spending, they're saving. Compare to current bill.",bodyLang:"Show side-by-side comparison.",options:[{label:"OK that makes sense",next:"close"},{label:"I need to talk to my spouse",next:"spouse_stall"},{label:"Not right now",next:"hard_no"}]},
+    spouse_stall:{text:"That's totally fair — I respect that. Most people do want to talk it over. Here's what I'd suggest: let me leave you with the info so you can look it over together. But honestly, the rate I'm showing you today is a limited-time thing — I can't guarantee it'll be the same if I come back next week. Want to at least lock it in and you've got a 3-day cancellation window if you change your mind?",info:"Validate their concern, then create urgency with limited-time rate + cancellation window safety net.",bodyLang:"Hand them the paperwork, step back slightly.",options:[{label:"OK let's lock it in",next:"close"},{label:"I really need to wait",next:"soft_close"}]},
+    hard_no:{text:"I completely respect that — I appreciate your time. Before I go, can I at least leave you my card? That way if your bill goes up or you hear about us from a neighbor, you've got someone to call. Have a great rest of your day!",info:"Stay positive. Leave the door open. A good exit builds reputation in the neighborhood.",bodyLang:"Smile, hand them a card, step back.",options:[]},
+    close:{text:"Awesome, let's get you set up! I just need a few things — it'll take about 10 to 15 minutes. You're gonna love seeing that first bill come in lower. Let me grab your info and we'll get you locked in at that rate.",info:"Be smooth and confident in transition. Don't hesitate or ask 'are you sure?' — they already said yes. Move to paperwork immediately.",bodyLang:"Pull out the paperwork/tablet confidently. Guide them through each step.",options:[]},
+    soft_close:{text:"No problem at all — I get it. Here's my card and the info sheet showing exactly what you'd save. Take a look when you get a chance. I'll be in the neighborhood again [day], so I can swing by and answer any questions. Sound good?",info:"Leave on a positive note. Set a specific follow-up time. Don't burn the lead.",bodyLang:"Hand materials, warm handshake or wave.",options:[]}
 };
 
 let multiFlows = [];
 let currentFlowId = null;
 
-let D={},mode='learn',stageHistory=[],hardRI={},recallRI={},editingId=null,transitioning=false;
+let D={},mode='learn',stageHistory=[],hardRI={},recallRI={},recallDifficulty=(()=>{try{const v=Number(localStorage.getItem('recallDifficulty')||'1');return (v===2)?2:1;}catch(e){return 1;}})(),editingId=null,transitioning=false;
 let routeMode='random',isRecording=false,savedRoute=null,pinnedNode=null;
 let optionsRevealed = false; 
 
@@ -920,7 +932,7 @@ function setSaved() {
 // ═══ CUSTOM PROMPTS ═══
 let promptCb = null;
 function showPrompt(title, defaultVal, cb) {
-    document.getElementById('promptTitle').innerHTML = '📝 ' + E(title);
+    document.getElementById('promptTitle').textContent = title;
     const inp = document.getElementById('promptInput');
     inp.value = defaultVal;
     promptCb = cb;
@@ -971,7 +983,7 @@ function createNewFlow() {
     if (!authUser) return toast('Log in to save multiple flows.');
     if (multiFlows.length >= 3) return toast('Maximum of 3 flows reached.');
     
-    showPrompt('Name for the new flow:', 'New Script', (name) => {
+    showPrompt('Name your new flow:', 'New Script', (name) => {
         if (!name || !name.trim()) return;
         const newId = 'f_' + Date.now();
         const newData = JSON.parse(JSON.stringify(defaultData));
@@ -1033,8 +1045,8 @@ function isNodeEmpty(id) {
     if (n.options && n.options.length > 0) return false;
     if (n.versions && n.versions.length > 1) return false;
     const v = n.versions ? n.versions[0] : n;
-    const txt = (v.text || '').trim().toLowerCase();
-    if (txt !== '' && !txt.includes('placeholder')) return false;
+    const txt = (v.text || '').trim();
+    if (txt !== '' && txt.toLowerCase() !== 'placeholder.' && txt.toLowerCase() !== 'placeholder') return false;
     if ((v.info || '').trim() !== '') return false;
     if ((v.bodyLang || '').trim() !== '') return false;
     return true;
@@ -1079,7 +1091,15 @@ function applyVersionToggle() {
 }
 
 // ═══ MODE ═══
-function setMode(m){mode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));hardRI={};recallRI={};transitioning=false;fullRender();}
+function setMode(m){mode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));hardRI={};recallRI={};transitioning=false;fullRender(true);}
+
+function toggleRecallDifficulty(ev){
+    if(ev){ev.stopPropagation();ev.preventDefault();}
+    recallDifficulty = (recallDifficulty===2)?1:2;
+    try{ localStorage.setItem('recallDifficulty', String(recallDifficulty)); }catch(e){}
+    fullRender(false);
+}
+
 
 // ═══ ROUTE TRACKING HELPERS ═══
 function getRouteStep() {
@@ -1244,8 +1264,14 @@ function rH(id,n,stageIdx,isLast){
         if(n.bodyLang&&n.bodyLang.trim())h+='<div class="info-wrapper">b<div class="info-tooltip"><strong>🧍 Body:</strong><br>'+E(n.bodyLang).replace(/\n/g,'<br>')+'</div></div>';
         h+='</div>';
     }
+    
+    // Recall difficulty toggle (only shows in Recall mode on the active card)
+    if(mode==='recall' && isLast){
+        h += `<button class="recall-diff-btn" onclick="toggleRecallDifficulty(event)" title="Recall difficulty (click to toggle)">${recallDifficulty===1?"L1":"L2"}</button>`;
+    }
     return h+'</div>';
 }
+
 
 function rCardInner(id, n, stageIdx, isLast) {
     let h = rH(id, n, stageIdx, isLast); 
@@ -1327,17 +1353,99 @@ function buildStage(stage,idx,isLast){
 
 function splitC(t){if(!t)return[""];let p=t.match(/[^.!?,;:\u2014\u2013]+[.!?,;:\u2014\u2013]+\s*/g);if(!p)return[t];let j=p.join('');if(j.length<t.length)p.push(t.slice(j.length));return p.filter(x=>x.trim());}
 
+
 function rS(text,sid,isLast){
     if(!text)text="";
     if(mode==='learn'||!isLast)return'<div class="script-full">'+E(text)+'</div>';
+
+    // Helpers for Recall masking (punctuation-aware, placeholder-aware)
+    function splitLT(tok){
+        // leading: any non-word chars except '[' (so placeholders stay intact)
+        let i=0,j=tok.length;
+        while(i<j && !/[A-Za-z0-9\[]/.test(tok[i])) i++;
+        while(j>i && !/[A-Za-z0-9\]']/ .test(tok[j-1])) j--; // allow ] and apostrophe as "core end"
+        return {lead: tok.slice(0,i), core: tok.slice(i,j), trail: tok.slice(j)};
+    }
+    function isPlaceholder(core){ return /^\[[^\]]*\]$/.test(core); }
+    function stripApos(s){ return s ? s.replace(/[’']/g,'') : s; }
+
+    function maskCore(core, level){
+        if(!core) return '';
+        if(isPlaceholder(core)) return '<span class="recall-punct">'+E(core)+'</span>';
+
+        // hyphen-aware: process each segment, keep hyphens visible
+        let out='';
+        const parts = core.split('-');
+        for(let pi=0; pi<parts.length; pi++){
+            const part = parts[pi];
+            if(pi>0) out += '<span class="recall-punct">-</span>';
+
+            // find first alphabetic letter in this segment
+            let firstIdx=-1;
+            for(let k=0;k<part.length;k++){ if(/[A-Za-z]/.test(part[k])) { firstIdx=k; break; } }
+            if(firstIdx===-1){
+                out += '<span class="recall-first">'+E(part)+'</span>';
+                continue;
+            }
+
+            // render characters: first letter visible; subsequent letters hidden (L1) or removed (L2); nonletters always visible
+            for(let k=0;k<part.length;k++){
+                const ch=part[k];
+                if(k===firstIdx){
+                    out += '<span class="recall-first">'+E(ch)+'</span>';
+                    continue;
+                }
+                if(/[A-Za-z]/.test(ch)){
+                    if(level===1){
+                        out += '<span class="recall-hide">'+E(ch)+'</span>';
+                    } else {
+                        // level 2: omit
+                    }
+                } else {
+                    if(ch==="'"||ch==="’"){ /* omit apostrophes in recall mode */ }
+                    else { out += '<span class="recall-punct">'+E(ch)+'</span>'; }
+                }
+            }
+        }
+        return out;
+    }
+    function recallToken(tok, level){
+        if(!tok) return '';
+        const {lead, core, trail} = splitLT(tok);
+
+        // Keep purely-punct tokens visible
+        if(!core && (lead || trail)) return '<span class="recall-punct">'+E(tok)+'</span>';
+
+        let html='';
+        if(lead){ const l2=stripApos(lead); if(l2) html += '<span class="recall-punct">'+E(l2)+'</span>'; }
+
+        html += maskCore(core, level);
+
+        if(trail){ const t2=stripApos(trail); if(t2) html += '<span class="recall-punct">'+E(t2)+'</span>'; }
+        return html;
+    }
+
     if(mode==='recall'){
+        const level = (recallDifficulty===2)?2:1;
         const ss=splitC(text),rv=recallRI[sid]||0;let h='<div class="script-recall">';
-        ss.forEach((s,si)=>{const ws=s.trim().split(/\s+/);if(si<rv){h+=ws.map(w=>'<span class="revealed-word">'+E(w)+'</span>').join(' ')+' ';}else{h+=ws.map(w=>{if(!w)return'';let be=w.length;while(be>1&&/[^a-zA-Z0-9']/.test(w[be-1]))be--;let b=w.slice(0,be),tl=w.slice(be);if(b.length<=1)return'<span class="recall-first">'+E(b)+'</span>'+(tl?'<span class="recall-punct">'+E(tl)+'</span>':'');return'<span class="recall-first">'+E(b[0])+'</span><span class="recall-hide">'+E(b.slice(1))+'</span>'+(tl?'<span class="recall-punct">'+E(tl)+'</span>':'');}).join(' ')+' ';}});
+        ss.forEach((s,si)=>{
+            const ws=s.trim().split(/\s+/).filter(Boolean);
+            if(si<rv){
+                h += ws.map(w=>'<span class="revealed-word">'+E(w)+'</span>').join(' ') + ' ';
+            } else {
+                h += ws.map(w=>recallToken(w, level)).join(' ') + ' ';
+            }
+        });
         return h+'</div>';
     }
-    if(mode==='hard'){const ss=splitC(text),rv=hardRI[sid]||0;return'<div class="script-hard">'+ss.map((s,i)=>'<span class="sentence '+(i<rv?'revealed':'hidden')+'">'+E(s)+'</span>').join(' ')+'</div>';}
+
+    if(mode==='hard'){
+        const ss=splitC(text),rv=hardRI[sid]||0;
+        return'<div class="script-hard">'+ss.map((s,i)=>'<span class="sentence '+(i<rv?'revealed':'hidden')+'">'+E(s)+'</span>').join(' ')+'</div>';
+    }
     return'';
 }
+
 
 function updateLS(){
     const i=stageHistory.length-1,s=stageHistory[i],n=D[s.id];if(!n)return;
@@ -1764,8 +1872,8 @@ document.addEventListener('keydown',e=>{
         if (e.code === 'Escape') closeEdit();
         return; 
     }
-    if (document.getElementById('addNodeInput')) {
-        if (e.code === 'Escape') document.getElementById('addNodeInput').remove();
+    if (document.getElementById('addNodeOverlay')) {
+        if (e.code === 'Escape') document.getElementById('addNodeOverlay').remove();
         return;
     }
 
@@ -1816,6 +1924,14 @@ document.addEventListener('keydown',e=>{
             let nextV = ((n.activeVersion || 0) + 1) % n.versions.length;
             switchLearnV(l.id, nextV);
             toast(`Switched to version ${nextV + 1}`);
+        } else {
+            const cd = document.querySelector(`#stage-${stageHistory.length-1} .response-card`);
+            if (cd) {
+                cd.classList.remove('wiggle');
+                void cd.offsetWidth;
+                cd.classList.add('wiggle');
+            }
+            toast('No other versions of this node');
         }
         return;
     }
@@ -2175,6 +2291,12 @@ function initMap(){
     mc.addEventListener('mousedown',e=>{
         if(e.target.closest('.mpt') || e.target.closest('#mapSearchWrap')) return;
         
+        // Close search bar if clicking outside it
+        const ms = document.getElementById('mapSearchWrap');
+        if(ms.classList.contains('show') && !e.target.closest('#mapSearchWrap')) {
+            ms.classList.remove('show');
+        }
+        
         if(e.button === 1 || (e.button === 0 && e.shiftKey)){
             e.preventDefault();
             isPan=true; mc.classList.add('panning');
@@ -2456,24 +2578,27 @@ function autoLayout() {
 }
 
 function addNewNode(){
-    const existing = document.getElementById('addNodeInput');
+    const existing = document.getElementById('addNodeOverlay');
     if(existing) existing.remove();
-    const wrap = document.createElement('div');
-    wrap.id = 'addNodeInput';
-    wrap.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:30;background:var(--bg2);border:1px solid var(--accent);border-radius:12px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,0.1);width:320px;';
-    wrap.innerHTML = `
-        <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--dim);margin-bottom:8px;">Node ID / Title</div>
-        <input id="addNodeId" type="text" placeholder="e.g. Price Objection" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-family:inherit;font-size:0.9rem;outline:none;" autofocus>
-        <div style="display:flex;gap:8px;margin-top:12px;">
-            <button onclick="confirmAddNode()" style="flex:1;padding:8px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:inherit;font-weight:600;font-size:0.82rem;cursor:pointer;">Create</button>
-            <button onclick="document.getElementById('addNodeInput').remove()" style="padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--dim);border-radius:8px;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;">Cancel</button>
+    const overlay = document.createElement('div');
+    overlay.id = 'addNodeOverlay';
+    overlay.className = 'confirm-overlay open';
+    overlay.onclick = function(e) { if(e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+        <div class="confirm-modal" onclick="event.stopPropagation()">
+            <h3 class="prompt-title">Add Node</h3>
+            <input id="addNodeId" type="text" placeholder="e.g. Price Objection" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-family:inherit;font-size:0.9rem;outline:none;margin-bottom:20px;transition:border 0.15s ease;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            <div class="confirm-actions">
+                <button class="tbtn" onclick="document.getElementById('addNodeOverlay').remove()">Cancel</button>
+                <button class="confirm-btn default-active" onclick="confirmAddNode()">Create</button>
+            </div>
         </div>`;
-    document.getElementById('mc').appendChild(wrap);
+    document.body.appendChild(overlay);
     const inp = document.getElementById('addNodeId');
-    setTimeout(()=>inp.focus(), 50); 
+    setTimeout(()=>inp.focus(), 50);
     inp.addEventListener('keydown', e => {
         if(e.code==='Enter') confirmAddNode();
-        if(e.code==='Escape') wrap.remove();
+        if(e.code==='Escape') overlay.remove();
     });
 }
 
@@ -2481,8 +2606,8 @@ function confirmAddNode(){
     const inp = document.getElementById('addNodeId');
     if(!inp) return;
     const id = inp.value;
-    const wrap = document.getElementById('addNodeInput');
-    if(wrap) wrap.remove();
+    const overlay = document.getElementById('addNodeOverlay');
+    if(overlay) overlay.remove();
     if(!id||!id.trim()) return;
     const s=id.trim();
     if(D[s]){toast("Exists!");return;}
