@@ -1,47 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Verifying D2D Flow...</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verifying | D2D Flow</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #f4f5f7; --surface: #ffffff; --border: #e2e8f0; 
+      --text: #1a1a1a; --dim: #6b7280; --accent: #557827; --red: #ef4444;
+    }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px 40px; width: 420px; max-width: 90vw; box-shadow: 0 16px 48px rgba(0,0,0,0.06); text-align: center; }
+    .logo { font-weight: 800; font-size: 2rem; color: var(--text); letter-spacing: -1px; margin-bottom: 24px; }
+    .logo span { color: var(--accent); }
+    .status-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+    .status-text { font-size: 0.95rem; color: var(--dim); line-height: 1.5; }
+    .landing-btn { display: none; width: 100%; padding: 14px; border: none; border-radius: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; background: var(--accent); color: #fff; margin-top: 24px; text-decoration: none; }
+    .landing-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  </style>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding-top: 100px; color: #333;">
-  
-  <h2>Verifying your email...</h2>
-  <p>Please wait just a second while we log you in to D2D Flow.</p>
+<body>
+
+  <div class="card">
+    <div class="logo">D2D <span>FLOW</span></div>
+    <div class="status-title" id="status-title">Verifying Link...</div>
+    <div class="status-text" id="status-text">Please wait just a moment while we securely log you in.</div>
+    <a href="/" class="landing-btn" id="home-btn">Return to Log In</a>
+  </div>
 
   <script>
     const supabaseUrl = 'https://oflgauvzeivxtvzfcqyi.supabase.co'; 
     const supabaseAnonKey = 'sb_publishable_a9yZ76fd59eGt0xgDQo13w_amlqUVxZ'; 
-    
-    // FIX: We changed the name to "supabaseClient" so it doesn't clash!
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-    async function verifyEmail() {
+    async function handleLink() {
       const urlParams = new URLSearchParams(window.location.search);
       const token_hash = urlParams.get('token_hash');
       const type = urlParams.get('type');
 
-      if (token_hash && type) {
-        // FIX: Using the new "supabaseClient" name here too
-        const { error } = await supabaseClient.auth.verifyOtp({
-          token_hash: token_hash,
-          type: type
-        });
+      const titleEl = document.getElementById('status-title');
+      const textEl = document.getElementById('status-text');
+      const homeBtn = document.getElementById('home-btn');
 
-        if (error) {
-          alert("Oops, there was an error verifying: " + error.message);
+      if (!token_hash || !type) {
+        titleEl.textContent = "Invalid Link";
+        titleEl.style.color = "var(--red)";
+        textEl.textContent = "This link is missing information. Please go back and request a new email.";
+        homeBtn.style.display = "inline-block";
+        return;
+      }
+
+      const { error } = await supabaseClient.auth.verifyOtp({ token_hash, type });
+
+      if (error) {
+        titleEl.textContent = "Link Expired";
+        titleEl.style.color = "var(--red)";
+        textEl.textContent = "This link is invalid or has already been used. Please request a new email.";
+        homeBtn.style.display = "inline-block";
+      } else {
+        if (type === 'recovery') {
+          window.location.href = '/auth/update-password.html';
         } else {
-          // Success! Send the user back to your main index.html page
           window.location.href = '/'; 
         }
-      } else {
-        document.body.innerHTML = "<h2>Invalid link</h2><p>This link seems to be broken or expired.</p>";
       }
     }
 
-    verifyEmail();
+    handleLink();
   </script>
-
 </body>
 </html>
