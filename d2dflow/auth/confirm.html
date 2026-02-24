@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Verifying D2D Flow...</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding-top: 100px; color: #333;">
+  
+  <h2>Verifying your email...</h2>
+  <p>Please wait just a second while we log you in to D2D Flow.</p>
+
+  <script>
+// 1. Put your actual Supabase project URL and Publishable Key here!
+    const supabaseUrl = 'https://oflgauvzeivxtvzfcqyi.supabase.co'; 
+    const supabaseAnonKey = 'sb_publishable_a9yZ76fd59eGt0xgDQo13w_amlqUVxZ'; 
+    
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    // 2. This function runs automatically to check the link
+    async function verifyEmail() {
+      // Look at the web address and grab the hidden tokens
+      const urlParams = new URLSearchParams(window.location.search);
+      const token_hash = urlParams.get('token_hash');
+      const type = urlParams.get('type');
+
+      if (token_hash && type) {
+        // Tell Supabase to verify the tokens
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: token_hash,
+          type: type
+        });
+
+        if (error) {
+          alert("Oops, there was an error verifying: " + error.message);
+        } else {
+          // Success! Send the user back to your main index.html page
+          window.location.href = '/'; 
+        }
+      } else {
+        document.body.innerHTML = "<h2>Invalid link</h2><p>This link seems to be broken or expired.</p>";
+      }
+    }
+
+    // Run the function
+    verifyEmail();
+  </script>
+
+</body>
+</html>
