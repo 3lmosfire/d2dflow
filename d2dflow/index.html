@@ -711,20 +711,15 @@
 <script>
 // ═══ DATA & HISTORY ═══
 const defaultData = {
-    start:{text:"Hey there! I'm [Name] with [Company] — we're actually out in the neighborhood today because we've been helping a bunch of your neighbors lower their [service] bills. I'm not here to sell you anything, just wanted to see if you'd be open to seeing how much you could save.",info:"Smile, be friendly. Match their energy. Stand at a comfortable distance.",bodyLang:"Half-step back, hands visible, relaxed posture.",options:[{label:"Not interested",next:"ni_objection"},{label:"What company?",next:"company_intro"},{label:"What is it exactly?",next:"the_hook"},{label:"How much does it cost?",next:"pricing"}]},
-    ni_objection:{text:"Totally get it — most people say that at first. I'm not asking you to commit to anything, I literally just need 30 seconds to show you what your neighbors are already saving. If it doesn't make sense, I'll be the first to tell you.",info:"Stay relaxed, don't get defensive. This is the most common objection — expect it every time.",bodyLang:"Nod, keep smiling, slight lean back.",options:[{label:"Fine, go ahead",next:"the_hook"},{label:"I'm really not interested",next:"hard_no"},{label:"What company is this?",next:"company_intro"}]},
-    company_intro:{text:"Great question — we're with [Company]. We've been in the area for [timeframe] working directly with homeowners to get them better rates on their [service]. You've probably seen our trucks around the neighborhood.",info:"Keep it brief. Don't over-explain — pivot quickly to the hook.",bodyLang:"Confident, point down the street casually.",options:[{label:"Never heard of you",next:"credibility"},{label:"OK what's the deal?",next:"the_hook"}]},
-    credibility:{text:"That's fair — we work mostly through referrals so we don't do a ton of advertising. But your neighbor [direction] just signed up last week and they're saving about $[X] a month. I'd love to see if we can do the same for you.",info:"Name-drop neighbors or reference visible signs/trucks if possible.",bodyLang:"Gesture toward nearby houses.",options:[{label:"Alright, show me",next:"the_hook"},{label:"I need to think about it",next:"spouse_stall"}]},
-    the_hook:{text:"So here's the deal — right now your [current provider] is probably charging you around $[X] a month. What we do is lock you in at a lower rate, usually saving people anywhere from $[range] a month. And the switch takes about 15 minutes, we handle everything.",info:"This is your moment — be specific with numbers. Use a clipboard or tablet to show visuals if you have them.",bodyLang:"Show paperwork/tablet, maintain eye contact.",options:[{label:"How much does it cost?",next:"pricing"},{label:"We already have a provider",next:"competitor_obj"},{label:"Sounds too good to be true",next:"skepticism_obj"}]},
-    pricing:{text:"That's the best part — there's no upfront cost to switch. Your first bill will actually be lower than what you're paying now. Most people in the neighborhood are saving between $[range] per month, and you're locked in at that rate.",info:"Always lead with 'no upfront cost.' Be specific about savings ranges.",bodyLang:"Point to the numbers on your sheet.",options:[{label:"That's too expensive",next:"price_objection"},{label:"Let me think about it",next:"spouse_stall"},{label:"OK let's do it",next:"close"}]},
-    competitor_obj:{text:"Perfect, that's actually exactly why I'm here. Most of your neighbors were with [competitor] too before they switched. We're not asking you to leave them in the dark — we just lock you in at a lower rate. You'll still get the same [service], just for less money.",info:"Don't bash the competitor. Position the switch as a no-brainer upgrade.",bodyLang:"Nod along, empathize.",options:[{label:"I'm happy with who I have",next:"happy_provider"},{label:"OK show me the numbers",next:"the_hook"}]},
-    happy_provider:{text:"I hear you, and I'm glad you've had a good experience. The only reason I bring it up is because [competitor] actually raised their rates about [X] months ago. A lot of people don't even realize they're overpaying. Can I at least show you a quick comparison? If it doesn't save you money, no worries.",info:"Plant the seed of doubt without being pushy. Offering a comparison is low commitment.",bodyLang:"Calm, non-threatening. Clipboard ready.",options:[{label:"Fine, show me",next:"the_hook"},{label:"No thanks",next:"hard_no"}]},
-    skepticism_obj:{text:"I know it sounds that way — I'd probably think the same thing! That's why I always tell people, don't take my word for it. Here's what your neighbor at [address/direction] is paying right now after they switched. The numbers speak for themselves.",info:"Social proof is your best weapon here. Reference real nearby customers.",bodyLang:"Show proof on tablet/clipboard.",options:[{label:"OK I'm listening",next:"pricing"},{label:"I still don't know...",next:"spouse_stall"}]},
-    price_objection:{text:"I totally understand — nobody wants to feel like they're spending more. But here's the thing: you're already paying $[X] a month. We're actually bringing that down, not up. So you're not spending more, you're keeping more in your pocket each month.",info:"Reframe: they're not spending, they're saving. Compare to current bill.",bodyLang:"Show side-by-side comparison.",options:[{label:"OK that makes sense",next:"close"},{label:"I need to talk to my spouse",next:"spouse_stall"},{label:"Not right now",next:"hard_no"}]},
-    spouse_stall:{text:"That's totally fair — I respect that. Most people do want to talk it over. Here's what I'd suggest: let me leave you with the info so you can look it over together. But honestly, the rate I'm showing you today is a limited-time thing — I can't guarantee it'll be the same if I come back next week. Want to at least lock it in and you've got a 3-day cancellation window if you change your mind?",info:"Validate their concern, then create urgency with limited-time rate + cancellation window safety net.",bodyLang:"Hand them the paperwork, step back slightly.",options:[{label:"OK let's lock it in",next:"close"},{label:"I really need to wait",next:"soft_close"}]},
-    hard_no:{text:"I completely respect that — I appreciate your time. Before I go, can I at least leave you my card? That way if your bill goes up or you hear about us from a neighbor, you've got someone to call. Have a great rest of your day!",info:"Stay positive. Leave the door open. A good exit builds reputation in the neighborhood.",bodyLang:"Smile, hand them a card, step back.",options:[]},
-    close:{text:"Awesome, let's get you set up! I just need a few things — it'll take about 10 to 15 minutes. You're gonna love seeing that first bill come in lower. Let me grab your info and we'll get you locked in at that rate.",info:"Be smooth and confident in transition. Don't hesitate or ask 'are you sure?' — they already said yes. Move to paperwork immediately.",bodyLang:"Pull out the paperwork/tablet confidently. Guide them through each step.",options:[]},
-    soft_close:{text:"No problem at all — I get it. Here's my card and the info sheet showing exactly what you'd save. Take a look when you get a chance. I'll be in the neighborhood again [day], so I can swing by and answer any questions. Sound good?",info:"Leave on a positive note. Set a specific follow-up time. Don't burn the lead.",bodyLang:"Hand materials, warm handshake or wave.",options:[]}
+    start:{text:"Your opening line goes here. Introduce yourself, your company, and why you're at their door.",info:"Keep it casual. You're a neighbor, not a salesman.",bodyLang:"Stand back, hands visible, friendly wave.",options:[{label:"Not interested",next:"objection"},{label:"What is it?",next:"pitch"},{label:"How much?",next:"pricing"}]},
+    objection:{text:"Your response to 'not interested' goes here. Acknowledge them and ask for 30 more seconds.",info:"Most common response — expect it every time. Stay relaxed.",bodyLang:"Nod, smile, lean back slightly.",options:[{label:"Fine, go ahead",next:"pitch"},{label:"No thanks",next:"hard_no"}]},
+    pitch:{text:"Your main pitch goes here. Explain what you do, how it helps, and what makes it easy.",info:"Be specific with numbers. Vague pitches don't close.",bodyLang:"Show your materials. Point to specifics.",options:[{label:"Too good to be true",next:"skepticism"},{label:"How much?",next:"pricing"},{label:"Let's do it",next:"close"}]},
+    pricing:{text:"Your pricing response goes here. Lead with no upfront cost, anchor to their current bill.",info:"Frame it as savings, not spending.",bodyLang:"Let the numbers do the talking.",options:[{label:"Need to think about it",next:"stall"},{label:"Let's do it",next:"close"}]},
+    skepticism:{text:"Your response to doubt goes here. Use social proof — reference neighbors, reviews, proof.",info:"Don't argue. Show evidence instead.",bodyLang:"Show proof on your materials.",options:[{label:"OK I'm listening",next:"pricing"},{label:"Not right now",next:"stall"}]},
+    stall:{text:"Your response to 'let me think about it' goes here. Create gentle urgency with a safety net.",info:"Validate, then mention limited-time rate + cancellation window.",bodyLang:"Hand them info, step back slightly.",options:[{label:"OK lock it in",next:"close"},{label:"I'll wait",next:"soft_close"}]},
+    hard_no:{text:"Your graceful exit goes here. Thank them, leave a card, keep the door open.",info:"Never burn a lead. They might call next week.",bodyLang:"Smile, hand card, wave goodbye.",options:[]},
+    close:{text:"Your close goes here. Move to paperwork immediately — don't ask 'are you sure?'",info:"They said yes. Be confident and efficient.",bodyLang:"Pull out forms, guide them through.",options:[]},
+    soft_close:{text:"Your soft close goes here. Leave materials and set a specific follow-up day.",info:"'I'll be here Thursday' beats 'I'll come back sometime.'",bodyLang:"Warm handshake, leave materials.",options:[]}
 };
 
 let multiFlows = [];
@@ -1738,11 +1733,11 @@ function revealN() {
     
     if (mode === 'hard') {
         const c = hardRI[l.id]||0;
-        if(c < s.length) { hardRI[l.id] = c + 1; updateLS(); return; }
+        if(c < s.length) { hardRI[l.id] = s.length; updateLS(); return; }
     }
     if (mode === 'recall') {
         const c = recallRI[l.id]||0;
-        if(c < s.length) { recallRI[l.id] = c + 1; updateLS(); return; }
+        if(c < s.length) { recallRI[l.id] = s.length; updateLS(); return; }
     }
     
     if (n.options && n.options.length > 0 && !isRecording && !optionsRevealed) {
@@ -1758,7 +1753,6 @@ function revealN() {
 }
 
 function canUnreveal() {
-    if (mode !== 'hard' && mode !== 'recall') return false;
     const l = stageHistory[stageHistory.length-1];
     if(!l) return false;
     const n = D[l.id];
@@ -1787,11 +1781,11 @@ function unrevealN() {
     
     if (mode === 'hard') {
         const c = hardRI[l.id]||0;
-        if(c > 0) { hardRI[l.id] = c - 1; updateLS(); return true; }
+        if(c > 0) { hardRI[l.id] = 0; updateLS(); return true; }
     }
     if (mode === 'recall') {
         const c = recallRI[l.id]||0;
-        if(c > 0) { recallRI[l.id] = c - 1; updateLS(); return true; }
+        if(c > 0) { recallRI[l.id] = 0; updateLS(); return true; }
     }
     
     return false;
@@ -2011,40 +2005,38 @@ document.addEventListener('keydown',e=>{
     }
 });
 
-// Scroll-to-reveal: wheel controls sentence reveal in recall/hard mode
+// Scroll-to-reveal: only intercepts at the bottom of the page
 let _scrollRevealCooldown = 0;
 document.addEventListener('wheel', e => {
-    // Only active in recall/hard mode, not in map/edit overlays, not in learn mode
-    if (mode !== 'hard' && mode !== 'recall') return;
     if (document.getElementById('mapOverlay').classList.contains('open')) return;
     if (document.getElementById('editOverlay').classList.contains('open')) return;
     if (transitioning) return;
     if (e.target.closest('.mpt') || e.target.closest('.edit-overlay') || e.target.closest('.map-overlay')) return;
     
-    // Throttle: one reveal action per 120ms
     const now = Date.now();
-    if (now - _scrollRevealCooldown < 120) { 
-        // Still in cooldown — block scroll if there's content to interact with
-        if (needsReveal() || canUnreveal()) e.preventDefault();
-        return; 
-    }
     
-    if (e.deltaY > 0) {
-        // Scroll down → reveal
-        if (needsReveal()) {
+    if (e.deltaY > 0 && needsReveal()) {
+        // Scroll down to reveal: only when user is bottomed out
+        const scrollBottom = window.innerHeight + window.scrollY;
+        const docHeight = document.documentElement.scrollHeight;
+        const atBottom = (docHeight - scrollBottom) < 30;
+        if (atBottom) {
+            if (now - _scrollRevealCooldown < 250) { e.preventDefault(); return; }
             e.preventDefault();
             _scrollRevealCooldown = now;
             revealN();
         }
-        // If nothing to reveal, let normal scroll happen
-    } else if (e.deltaY < 0) {
-        // Scroll up → unreveal
-        if (canUnreveal()) {
+    } else if (e.deltaY < 0 && canUnreveal()) {
+        // Scroll up to unreveal: only when at the bottom area (can't scroll further down)
+        const scrollBottom = window.innerHeight + window.scrollY;
+        const docHeight = document.documentElement.scrollHeight;
+        const nearBottom = (docHeight - scrollBottom) < 30;
+        if (nearBottom) {
+            if (now - _scrollRevealCooldown < 250) { e.preventDefault(); return; }
             e.preventDefault();
             _scrollRevealCooldown = now;
             unrevealN();
         }
-        // If nothing to unreveal, let normal scroll happen (scroll up to see history)
     }
 }, {passive: false});
 
