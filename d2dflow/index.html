@@ -1674,17 +1674,11 @@ function goBack(){
     const currentIdx = stageHistory.length - 1;
     const lid = stageHistory[currentIdx]?.id;
     
-    if (!isRecording && optionsRevealed) {
-        optionsRevealed = false;
-        const bc = document.getElementById('bubbles-' + currentIdx);
-        if (bc) bc.classList.add('hide-opts');
-        const hc = document.getElementById('hint-' + currentIdx);
-        if (hc) hc.innerHTML = `<kbd>Space</kbd> / <kbd>→</kbd> ${getHintText(getRouteStep())} · <kbd>←</kbd> back`;
-        return; 
+    // Try unrevealing sentences/options first
+    if (canUnreveal()) {
+        unrevealN();
+        return;
     }
-
-    if(mode==='hard'&&lid&&(hardRI[lid]||0)>0){hardRI[lid]--;updateLS();return;}
-    if(mode==='recall'&&lid&&(recallRI[lid]||0)>0){recallRI[lid]--;updateLS();return;}
     
     if (currentIdx === 0) {
         const cd = document.querySelector(`#stage-0 .response-card`);
@@ -1744,11 +1738,11 @@ function revealN() {
     
     if (mode === 'hard') {
         const c = hardRI[l.id]||0;
-        if(c < s.length) { hardRI[l.id] = s.length; updateLS(); return; }
+        if(c < s.length) { hardRI[l.id] = c + 1; updateLS(); return; }
     }
     if (mode === 'recall') {
         const c = recallRI[l.id]||0;
-        if(c < s.length) { recallRI[l.id] = s.length; updateLS(); return; }
+        if(c < s.length) { recallRI[l.id] = c + 1; updateLS(); return; }
     }
     
     if (n.options && n.options.length > 0 && !isRecording && !optionsRevealed) {
@@ -1761,6 +1755,46 @@ function revealN() {
             hc.innerHTML = `<kbd>Space</kbd> / <kbd>→</kbd> ${getHintText(getRouteStep())} · <kbd>←</kbd> back`;
         }
     }
+}
+
+function canUnreveal() {
+    if (mode !== 'hard' && mode !== 'recall') return false;
+    const l = stageHistory[stageHistory.length-1];
+    if(!l) return false;
+    const n = D[l.id];
+    if(!n) return false;
+    if (!isRecording && optionsRevealed) return true;
+    if (mode === 'hard' && (hardRI[l.id]||0) > 0) return true;
+    if (mode === 'recall' && (recallRI[l.id]||0) > 0) return true;
+    return false;
+}
+
+function unrevealN() {
+    const l = stageHistory[stageHistory.length-1];
+    if(!l) return false;
+    const n = D[l.id];
+    if(!n) return false;
+    const currentIdx = stageHistory.length - 1;
+    
+    if (!isRecording && optionsRevealed) {
+        optionsRevealed = false;
+        const bc = document.getElementById('bubbles-' + currentIdx);
+        if (bc) bc.classList.add('hide-opts');
+        const hc = document.getElementById('hint-' + currentIdx);
+        if (hc) hc.innerHTML = `<kbd>Space</kbd> / <kbd>→</kbd> ${getHintText(getRouteStep())} · <kbd>←</kbd> back`;
+        return true;
+    }
+    
+    if (mode === 'hard') {
+        const c = hardRI[l.id]||0;
+        if(c > 0) { hardRI[l.id] = c - 1; updateLS(); return true; }
+    }
+    if (mode === 'recall') {
+        const c = recallRI[l.id]||0;
+        if(c > 0) { recallRI[l.id] = c - 1; updateLS(); return true; }
+    }
+    
+    return false;
 }
 
 function toggleRouteMode(){
@@ -1976,6 +2010,43 @@ document.addEventListener('keydown',e=>{
         return;
     }
 });
+
+// Scroll-to-reveal: wheel controls sentence reveal in recall/hard mode
+let _scrollRevealCooldown = 0;
+document.addEventListener('wheel', e => {
+    // Only active in recall/hard mode, not in map/edit overlays, not in learn mode
+    if (mode !== 'hard' && mode !== 'recall') return;
+    if (document.getElementById('mapOverlay').classList.contains('open')) return;
+    if (document.getElementById('editOverlay').classList.contains('open')) return;
+    if (transitioning) return;
+    if (e.target.closest('.mpt') || e.target.closest('.edit-overlay') || e.target.closest('.map-overlay')) return;
+    
+    // Throttle: one reveal action per 120ms
+    const now = Date.now();
+    if (now - _scrollRevealCooldown < 120) { 
+        // Still in cooldown — block scroll if there's content to interact with
+        if (needsReveal() || canUnreveal()) e.preventDefault();
+        return; 
+    }
+    
+    if (e.deltaY > 0) {
+        // Scroll down → reveal
+        if (needsReveal()) {
+            e.preventDefault();
+            _scrollRevealCooldown = now;
+            revealN();
+        }
+        // If nothing to reveal, let normal scroll happen
+    } else if (e.deltaY < 0) {
+        // Scroll up → unreveal
+        if (canUnreveal()) {
+            e.preventDefault();
+            _scrollRevealCooldown = now;
+            unrevealN();
+        }
+        // If nothing to unreveal, let normal scroll happen (scroll up to see history)
+    }
+}, {passive: false});
 
 document.addEventListener('click', e => {
     const stageEl = e.target.closest('.stage');
@@ -2811,19 +2882,14 @@ function updDL(mx,my){
         let trackLeft = minX - 30;
         let trackRight = maxX + 30;
         
-        let midX = (canSX + canMX) / 2;
-        let bboxCenter = (minX + maxX) / 2;
-        let distLeft = Math.abs(canSX - trackLeft) + Math.abs(trackLeft - canMX);
-        let distRight = Math.abs(canSX - trackRight) + Math.abs(trackRight - canMX);
-        
+        let dx = canMX - canSX;
         let goLeft;
-        let ratio = distLeft / (distRight || 0.001);
-        if (ratio < 0.85) {
+        if (dx < -20) {
             goLeft = true;
-        } else if (ratio > 1.18) {
+        } else if (dx > 20) {
             goLeft = false;
         } else {
-            goLeft = midX < bboxCenter;
+            goLeft = canSX > (minX + maxX) / 2;
         }
         
         let safeX = goLeft ? trackLeft : trackRight;
@@ -3244,19 +3310,20 @@ function getPath(sx, sy, ex, ey, oi=0, totalOpts=1, sourceId='', targetId='') {
         let trackLeft = minX - 30 - (oi * 12);
         let trackRight = maxX + 30 + (oi * 12);
         
-        let midX = (sx + ex) / 2;
-        let bboxCenter = (minX + maxX) / 2;
-        let distLeft = Math.abs(sx - trackLeft) + Math.abs(trackLeft - ex);
-        let distRight = Math.abs(sx - trackRight) + Math.abs(trackRight - ex);
+        // Simple intuitive routing: go the direction the target is
+        // If target center is clearly left of source center, route left and vice versa
+        let sCenterX = sNode.x + NW / 2;
+        let tCenterX = tNode.x + NW / 2;
+        let dx = tCenterX - sCenterX;
         
         let goLeft;
-        let ratio = distLeft / (distRight || 0.001);
-        if (ratio < 0.85) {
-            goLeft = true;
-        } else if (ratio > 1.18) {
-            goLeft = false;
+        if (dx < -20) {
+            goLeft = true;   // target is to the left → route left
+        } else if (dx > 20) {
+            goLeft = false;  // target is to the right → route right
         } else {
-            goLeft = midX < bboxCenter;
+            // Stacked roughly vertically — route on the side with more open space
+            goLeft = sCenterX > (minX + maxX) / 2;
         }
         
         let safeX = goLeft ? trackLeft : trackRight;
