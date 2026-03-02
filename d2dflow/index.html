@@ -360,6 +360,10 @@
         .port-out { position:absolute; width:8px; height:8px; bottom:-4px; transform:translateX(-50%); cursor:crosshair; background:var(--dim); border:2px solid var(--dim); border-radius:50%; z-index:8; transition:all 0.15s ease; box-sizing:border-box; }
         .port-out:hover { background:var(--surface2); border-color:var(--accent); width:14px; height:14px; bottom:-7px; }
         .port-out::before { content:''; position:absolute; inset:-12px; border-radius:50%; z-index:-1; }
+        .port-tooltip { position:fixed; z-index:60; background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:8px 12px; box-shadow:0 8px 24px rgba(0,0,0,0.1); pointer-events:none; opacity:0; transition:opacity 0.15s ease; font-size:0.78rem; line-height:1.4; max-width:240px; white-space:nowrap; transform:translateX(-50%); }
+        .port-tooltip.show { opacity:1; }
+        .port-tooltip .pt-label { color:var(--text); font-weight:600; }
+        .port-tooltip .pt-route { color:var(--dim); font-family:'JetBrains Mono',monospace; font-size:0.65rem; font-weight:500; margin-top:2px; }
         .port-out-empty { opacity:0; }
         .mn:hover .port-out-empty, .port-out-empty:hover { opacity:1; }
 
@@ -455,7 +459,7 @@
 <!-- ═══ OFF ROUTE POPUP ═══ -->
 <div id="offRoutePopup" class="off-route-popup" onclick="resetRun()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
-    Off Route - Return to Start
+    Off Route - Return to Introduction
 </div>
 
 <!-- ═══ LANDING PAGE ═══ -->
@@ -571,7 +575,7 @@
 
 <div class="main" id="main"></div>
 
-<div class="edit-overlay" id="editOverlay" onclick="closeEdit()">
+<div class="edit-overlay" id="editOverlay">
     <div class="edit-drawer" onclick="event.stopPropagation()">
         <div class="ed-header">
             <h3 id="edTitle">Edit Response</h3>
@@ -600,7 +604,7 @@
 
 <div class="toast" id="toast"></div>
 
-<div class="confirm-overlay" id="confirmOverlay" onclick="closeConfirm()">
+<div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-modal" onclick="event.stopPropagation()">
         <h3 class="confirm-title">Warning</h3>
         <p class="confirm-msg" id="confirmMsg"></p>
@@ -685,10 +689,11 @@
         </div>
         <div class="map-canvas" id="mcv"></div>
         <svg id="dwSvg" style="position:fixed;inset:0;pointer-events:none;z-index:100;display:none;width:100vw;height:100vh;">
-            <path id="dwPath" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.85" stroke-dasharray="8 4"/>
+            <path id="dwPath" stroke="var(--accent)" stroke-width="2" fill="none" opacity="1"/>
         </svg>
         <div class="mpt" id="mpt"></div>
         <div id="edgeTips"></div>
+        <div id="portTooltip" class="port-tooltip"></div>
         <div class="map-shortcuts">
             <span class="map-sc"><kbd>Mid-Click</kbd> pan</span>
             <span class="map-sc"><kbd>Left-Drag</kbd> select</span>
@@ -1039,6 +1044,8 @@ function toast(m){
 
 function E(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
+function displayId(id){return id==='start'?'Introduction':id;}
+
 function isNodeEmpty(id) {
     const n = D[id];
     if (!n) return true;
@@ -1241,7 +1248,7 @@ function fullRender(animate){
 }
 
 function rH(id,n,stageIdx,isLast){
-    let h=`<div class="stage-header"><div class="stage-label">${E(id)}`;
+    let h=`<div class="stage-header"><div class="stage-label">${E(displayId(id))}`;
     
     if (n.versions && n.versions.length > 1) {
         const vName = (n.versions[n.activeVersion] && n.versions[n.activeVersion].name) || `Version ${n.activeVersion+1}`;
@@ -1428,12 +1435,31 @@ function rS(text,sid,isLast){
     if(mode==='recall'){
         const level = (recallDifficulty===2)?2:1;
         const ss=splitC(text),rv=recallRI[sid]||0;let h='<div class="script-recall">';
+
+        function renderMaskedWithBrackets(sentence){
+            // Anything inside [ ... ] should be revealed in Recall mode (but not in Hard mode)
+            const parts = sentence.split(/(\[[^\]]*\])/g).filter(p => p !== '');
+            let out = '';
+            parts.forEach(p => {
+                if(/^\[[^\]]*\]$/.test(p)){
+                    const inner = p.slice(1,-1).trim();
+                    out += '<span class="recall-punct">[</span>' +
+                           '<span class="revealed-word">'+E(inner)+'</span>' +
+                           '<span class="recall-punct">]</span> ';
+                } else {
+                    const ws = p.trim().split(/\s+/).filter(Boolean);
+                    if(ws.length) out += ws.map(w=>recallToken(w, level)).join(' ') + ' ';
+                }
+            });
+            return out;
+        }
+
         ss.forEach((s,si)=>{
             const ws=s.trim().split(/\s+/).filter(Boolean);
             if(si<rv){
                 h += ws.map(w=>'<span class="revealed-word">'+E(w)+'</span>').join(' ') + ' ';
             } else {
-                h += ws.map(w=>recallToken(w, level)).join(' ') + ' ';
+                h += renderMaskedWithBrackets(s);
             }
         });
         return h+'</div>';
@@ -1718,11 +1744,11 @@ function revealN() {
     
     if (mode === 'hard') {
         const c = hardRI[l.id]||0;
-        if(c < s.length) { hardRI[l.id] = c + 1; updateLS(); return; }
+        if(c < s.length) { hardRI[l.id] = s.length; updateLS(); return; }
     }
     if (mode === 'recall') {
         const c = recallRI[l.id]||0;
-        if(c < s.length) { recallRI[l.id] = c + 1; updateLS(); return; }
+        if(c < s.length) { recallRI[l.id] = s.length; updateLS(); return; }
     }
     
     if (n.options && n.options.length > 0 && !isRecording && !optionsRevealed) {
@@ -1936,11 +1962,18 @@ document.addEventListener('keydown',e=>{
         return;
     }
 
-    if(e.code==='Space'||e.code==='ArrowRight'){e.preventDefault();if(needsReveal())revealN();else advR();}
-    if(e.code==='ArrowLeft'||e.code==='Backspace'){e.preventDefault();goBack();}
-    
+    // ArrowDown: same as ArrowRight (reveal if needed, else advance)
+    if(e.code==='ArrowDown'){ e.preventDefault(); if(needsReveal())revealN(); else advR(); return; }
+
+    // ArrowUp: same as back
+    if(e.code==='ArrowUp'){ e.preventDefault(); goBack(); return; }
+
+    if(e.code==='Space'||e.code==='ArrowRight'){e.preventDefault();if(needsReveal())revealN();else advR(); return;}
+    if(e.code==='ArrowLeft'||e.code==='Backspace'){e.preventDefault();goBack(); return;}
+
     if(e.code==='KeyR') {
         resetRun();
+        return;
     }
 });
 
@@ -1962,11 +1995,7 @@ document.addEventListener('click', e => {
     if(needsReveal()) {
         revealN();
     } else {
-        const li = stageHistory.length - 1;
-        const n = D[stageHistory[li].id];
-        if (n && n.options && n.options.length > 0) {
-            advR();
-        }
+        advR();
     }
 });
 
@@ -2233,6 +2262,25 @@ function showConfirm(m,cb){
     setTimeout(() => document.getElementById('confirmYesBtn').focus(), 50); 
 }
 function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('open');confirmCb=null;}
+
+// Close overlays only on an intentional outside click (not mouse-drag select that ends outside)
+function setupSafeOverlayClose(overlayId, closeFn){
+    const ov = document.getElementById(overlayId);
+    if(!ov) return;
+    let downOnOverlay = false;
+    ov.addEventListener('pointerdown', (e) => {
+        downOnOverlay = (e.target === ov);
+    });
+    ov.addEventListener('click', (e) => {
+        if(e.target === ov && downOnOverlay) closeFn();
+        downOnOverlay = false;
+    });
+}
+
+setupSafeOverlayClose('editOverlay', () => closeEdit());
+setupSafeOverlayClose('promptOverlay', () => closePrompt());
+setupSafeOverlayClose('confirmOverlay', () => closeConfirm());
+
 document.getElementById('confirmYesBtn').addEventListener('click',()=>{if(confirmCb)confirmCb();closeConfirm();});
 function deleteNode(){
     if(!editingId||editingId==='start')return;
@@ -2287,6 +2335,30 @@ function updateEdgeHover(cx, cy) {
 
 function initMap(){
     const mc=document.getElementById('mc');
+
+    mc.addEventListener('mouseover', e => {
+        const port = e.target.closest('.port-out');
+        if(!port || port.classList.contains('port-out-empty')) return;
+        const node = port.closest('.mn');
+        if(!node) return;
+        const sid = node.dataset.id;
+        const oi = parseInt(port.dataset.portOi);
+        const n = D[sid];
+        if(!n || !n.options || !n.options[oi]) return;
+        const opt = n.options[oi];
+        const tip = document.getElementById('portTooltip');
+        tip.innerHTML = `<div class="pt-label">"${E(opt.label)}"</div><div class="pt-route">${E(sid)} → ${E(opt.next)}</div>`;
+        const pr = port.getBoundingClientRect();
+        tip.style.left = (pr.left + pr.width/2) + 'px';
+        tip.style.top = (pr.bottom + 8) + 'px';
+        tip.classList.add('show');
+    });
+    mc.addEventListener('mouseout', e => {
+        const port = e.target.closest('.port-out');
+        if(port) {
+            document.getElementById('portTooltip').classList.remove('show');
+        }
+    });
 
     mc.addEventListener('mousedown',e=>{
         if(e.target.closest('.mpt') || e.target.closest('#mapSearchWrap')) return;
@@ -2500,6 +2572,7 @@ function initMap(){
         }else{
             mPX-=e.deltaX;mPY-=e.deltaY;applyT();
         }
+        if(dragW||rewireW) updDL(lastMouseX, lastMouseY);
         updateEdgeHover(lastMouseX, lastMouseY);
     },{passive:false});
 }
@@ -2699,18 +2772,84 @@ function clearEdgeTips(){edgeTipEls.forEach(t=>t.el.remove());edgeTipEls=[];}
 
 function startDW(sid,e){
     e.stopPropagation();e.preventDefault();
+    document.getElementById('portTooltip').classList.remove('show');
     const pr=e.currentTarget.getBoundingClientRect();
     const cx=pr.left+pr.width/2, cy=pr.top+pr.height/2;
-    dragW={sid,sx:cx,sy:cy};
+    const mc=document.getElementById('mc');
+    const rect=mc.getBoundingClientRect();
+    const canX=(cx-rect.left-mPX)/mS;
+    const canY=(cy-rect.top-mPY)/mS;
+    dragW={sid,sx:cx,sy:cy,canX,canY};
     document.getElementById('dwSvg').style.display='block';
     document.getElementById('mc').classList.add('dragging-node');
     updDL(e.clientX,e.clientY);
 }
 function updDL(mx,my){
     const st=dragW||rewireW;if(!st)return;
-    const sx=st.sx,sy=st.sy;
-    const cpy=Math.max(30,Math.abs(my-sy)*0.4);
-    document.getElementById('dwPath').setAttribute('d',`M ${sx} ${sy} C ${sx} ${sy+cpy}, ${mx} ${my-cpy}, ${mx} ${my}`);
+    const mc=document.getElementById('mc');
+    const rect=mc.getBoundingClientRect();
+    const NW=160,NH=48;
+    // Use stored canvas coords and recompute screen position each frame (fixes scroll/pan)
+    const sx = st.canX * mS + mPX + rect.left;
+    const sy = st.canY * mS + mPY + rect.top;
+    const canSX = st.canX;
+    const canSY = st.canY;
+    const canMX=(mx-rect.left-mPX)/mS;
+    const canMY=(my-rect.top-mPY)/mS;
+    
+    if(canMY > canSY + NH/2) {
+        const drop = Math.max(40, (canMY - canSY) / 2);
+        const sDrop=drop*mS;
+        document.getElementById('dwPath').setAttribute('d',`M ${sx} ${sy} C ${sx} ${sy+sDrop}, ${mx} ${my-sDrop}, ${mx} ${my}`);
+    } else {
+        let dropY = canSY + 25;
+        let riseY = canMY - 30;
+        let sNodeX = canSX - NW/2;
+        let tNodeX = canMX - NW/2;
+        let minX = Math.min(sNodeX, tNodeX);
+        let maxX = Math.max(sNodeX + NW, tNodeX + NW);
+        let trackLeft = minX - 30;
+        let trackRight = maxX + 30;
+        
+        let midX = (canSX + canMX) / 2;
+        let bboxCenter = (minX + maxX) / 2;
+        let distLeft = Math.abs(canSX - trackLeft) + Math.abs(trackLeft - canMX);
+        let distRight = Math.abs(canSX - trackRight) + Math.abs(trackRight - canMX);
+        
+        let goLeft;
+        let ratio = distLeft / (distRight || 0.001);
+        if (ratio < 0.85) {
+            goLeft = true;
+        } else if (ratio > 1.18) {
+            goLeft = false;
+        } else {
+            goLeft = midX < bboxCenter;
+        }
+        
+        let safeX = goLeft ? trackLeft : trackRight;
+        
+        let pts = [
+            {x: canSX, y: canSY}, {x: canSX, y: dropY}, {x: safeX, y: dropY},
+            {x: safeX, y: riseY}, {x: canMX, y: riseY}, {x: canMX, y: canMY}
+        ];
+        
+        let screenPts = pts.map(p => ({
+            x: p.x * mS + mPX + rect.left,
+            y: p.y * mS + mPY + rect.top
+        }));
+        
+        let ds = `M ${screenPts[0].x} ${screenPts[0].y}`;
+        for(let i=1; i<screenPts.length-1; i++){
+            const p0=screenPts[i-1], p1=screenPts[i], p2=screenPts[i+1];
+            const dx1=p0.x-p1.x, dy1=p0.y-p1.y, l1=Math.hypot(dx1,dy1)||0.0001;
+            const dx2=p2.x-p1.x, dy2=p2.y-p1.y, l2=Math.hypot(dx2,dy2)||0.0001;
+            const aR=Math.min(16*mS, l1/2, l2/2);
+            if(aR<=0.1){ds+=` L ${p1.x} ${p1.y}`; continue;}
+            ds+=` L ${p1.x+(dx1/l1)*aR} ${p1.y+(dy1/l1)*aR} Q ${p1.x} ${p1.y} ${p1.x+(dx2/l2)*aR} ${p1.y+(dy2/l2)*aR}`;
+        }
+        ds+=` L ${screenPts[screenPts.length-1].x} ${screenPts[screenPts.length-1].y}`;
+        document.getElementById('dwPath').setAttribute('d', ds);
+    }
 }
 function finishDW(e){
     document.getElementById('dwSvg').style.display='none';
@@ -2741,7 +2880,12 @@ function startRW(sid,oi){
     const port = ports[oi] || ports[0];
     if(!port) return;
     const r=port.getBoundingClientRect();
-    rewireW={sid,oi,sx:r.left+r.width/2,sy:r.top+r.height/2};
+    const cx=r.left+r.width/2, cy=r.top+r.height/2;
+    const mc=document.getElementById('mc');
+    const mcRect=mc.getBoundingClientRect();
+    const canX=(cx-mcRect.left-mPX)/mS;
+    const canY=(cy-mcRect.top-mPY)/mS;
+    rewireW={sid,oi,sx:cx,sy:cy,canX,canY};
     document.getElementById('dwSvg').style.display='block';
     document.getElementById('mc').classList.add('dragging-node');
     closeMPT(true);toast('Drop on target response');
@@ -3099,7 +3243,22 @@ function getPath(sx, sy, ex, ey, oi=0, totalOpts=1, sourceId='', targetId='') {
         let maxX = Math.max(sNode.x + NW, tNode.x + NW);
         let trackLeft = minX - 30 - (oi * 12);
         let trackRight = maxX + 30 + (oi * 12);
-        let goLeft = (sx - minX) + (ex - minX) < (maxX - sx) + (maxX - ex);
+        
+        let midX = (sx + ex) / 2;
+        let bboxCenter = (minX + maxX) / 2;
+        let distLeft = Math.abs(sx - trackLeft) + Math.abs(trackLeft - ex);
+        let distRight = Math.abs(sx - trackRight) + Math.abs(trackRight - ex);
+        
+        let goLeft;
+        let ratio = distLeft / (distRight || 0.001);
+        if (ratio < 0.85) {
+            goLeft = true;
+        } else if (ratio > 1.18) {
+            goLeft = false;
+        } else {
+            goLeft = midX < bboxCenter;
+        }
+        
         let safeX = goLeft ? trackLeft : trackRight;
         
         let pts = [ {x: sx, y: sy}, {x: sx, y: dropY}, {x: safeX, y: dropY}, {x: safeX, y: riseY}, {x: ex, y: riseY}, {x: ex, y: ey} ];
@@ -3118,12 +3277,25 @@ function getPath(sx, sy, ex, ey, oi=0, totalOpts=1, sourceId='', targetId='') {
     }
 }
 
+let _edgeAnimId = 0;
 function updSvg(){
+    const NW=160, NH=48;
+    let needsRebuild = false;
+    let portsSwapped = false;
+
     Object.keys(D).forEach(u => {
         const n = D[u];
         if(n.options) {
             const sortedIndices = n.options.map((o,i)=>i).sort((a,b) => (D[n.options[a].next]?.x||0) - (D[n.options[b].next]?.x||0));
+            const oldPosMap = n.posMap ? n.posMap.slice() : null;
             n.posMap = []; sortedIndices.forEach((oi, pos) => n.posMap[oi] = pos);
+            
+            if(oldPosMap && oldPosMap.length === n.posMap.length) {
+                for(let i = 0; i < n.posMap.length; i++) {
+                    if(n.posMap[i] !== oldPosMap[i]) { portsSwapped = true; break; }
+                }
+            }
+            
             const nel = document.querySelector(`.mn[data-id="${CSS.escape(u)}"]`);
             if(nel) {
                 n.options.forEach((o, oi) => {
@@ -3133,20 +3305,86 @@ function updSvg(){
             }
         }
     });
-    const el=document.querySelector('#mcv svg g');if(el)el.innerHTML=getMP();
+
+    const svgG = document.querySelector('#mcv svg g');
+    if(!svgG) return;
+
+    function updateEdgePaths() {
+        Object.keys(D).forEach(u => {
+            const n = D[u]; if(!n || n.x === undefined || !n.options) return;
+            const nel = document.querySelector(`.mn[data-id="${CSS.escape(u)}"]`);
+            const nodeW = nel ? nel.offsetWidth : NW;
+            n.options.forEach((o, oi) => {
+                const v = o.next, nB = D[v]; if(!nB || nB.x === undefined) return;
+                
+                let sx, sy;
+                const port = nel?.querySelector(`.port-out[data-port-oi="${oi}"]`);
+                if(port) {
+                    const computedLeft = parseFloat(getComputedStyle(port).left);
+                    sx = n.x + 2 + computedLeft;
+                    sy = n.y + NH;
+                } else {
+                    const pos = n.posMap ? n.posMap[oi] : oi;
+                    const pct = (pos + 1) / (n.options.length + 1);
+                    sx = n.x + 2 + (nodeW - 4) * pct;
+                    sy = n.y + NH;
+                }
+                const tNel = document.querySelector(`.mn[data-id="${CSS.escape(v)}"]`);
+                const tNodeW = tNel ? tNel.offsetWidth : NW;
+                const ex = nB.x + tNodeW / 2;
+                const ey = nB.y;
+                const d = getPath(sx, sy, ex, ey, oi, n.options.length, u, v);
+                const pathId = `path_${u.replace(/[^a-zA-Z0-9]/g,'_')}_${oi}`;
+                const elPath = document.getElementById(pathId);
+                if(elPath) {
+                    elPath.setAttribute('d', d);
+                    const hitPath = elPath.nextElementSibling;
+                    if(hitPath && hitPath.tagName === 'path') hitPath.setAttribute('d', d);
+                } else {
+                    needsRebuild = true;
+                }
+            });
+        });
+    }
+
+    if(needsRebuild) {
+        svgG.innerHTML = getMP();
+    } else {
+        updateEdgePaths();
+        if(needsRebuild) {
+            svgG.innerHTML = getMP();
+            return;
+        }
+    }
+
+    if(portsSwapped) {
+        const animId = ++_edgeAnimId;
+        const start = performance.now();
+        const duration = 180;
+        function animFrame(now) {
+            if(animId !== _edgeAnimId) return;
+            updateEdgePaths();
+            if(now - start < duration) requestAnimationFrame(animFrame);
+        }
+        requestAnimationFrame(animFrame);
+    }
 }
 
 function getMP(){
     const NW=160,NH=48;let p='';
     Object.keys(D).forEach(u=>{
         const n=D[u];if(!n||n.x===undefined||!n.options)return;
+        const sNel = document.querySelector(`.mn[data-id="${CSS.escape(u)}"]`);
+        const sW = sNel ? sNel.offsetWidth : NW;
         n.options.forEach((o,oi)=>{
             const v=o.next,nB=D[v];if(!nB||nB.x===undefined)return;
             const pos = n.posMap ? n.posMap[oi] : oi;
             const pct = (pos + 1) / (n.options.length + 1);
-            const sx = n.x + NW * pct;
+            const sx = n.x + 2 + (sW - 4) * pct;
             const sy = n.y + NH;
-            const ex = nB.x + NW / 2;
+            const tNel = document.querySelector(`.mn[data-id="${CSS.escape(v)}"]`);
+            const tW = tNel ? tNel.offsetWidth : NW;
+            const ex = nB.x + tW / 2;
             const ey = nB.y;
 
             const d = getPath(sx, sy, ex, ey, oi, n.options.length, u, v);
@@ -3221,7 +3459,7 @@ function renderMap(){
         }
 
         if (u !== 'start' && inDeg[u] > 0) h += `<div class="port-in-dot"></div>`;
-        h += `<div class="mn-t">${E(u)}</div>`;
+        h += `<div class="mn-t">${E(displayId(u))}</div>`;
         
         if(n.options && n.options.length > 0) {
             n.options.forEach((o, oi) => {
